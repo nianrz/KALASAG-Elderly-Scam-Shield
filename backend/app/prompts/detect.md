@@ -39,3 +39,5 @@ Return ONLY a JSON object, no other text:
 }}
 
 Red-flag labels and details are read by an elderly person under stress: plain words, no jargon, one idea per flag. If the verdict is LIKELY_LEGIT and no red flags exist, return an empty red_flags array — do not invent one.
+
+Write every red-flag label and detail in this language: {output_language} ("tl" means plain Filipino/Taglish as spoken — words like i-click, link, account, i-verify stay in English; "en" means plain English). The verdict, confidence, and low_confidence_reason stay as specified above regardless of language.

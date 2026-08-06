@@ -40,6 +40,7 @@ def make_detect(model: BaseChatModel):
             message_type=state["message_type"],
             redactions=state["redactions"] or "none",
             redacted_text=state["redacted_text"],
+            output_language=state["output_language"],
         )
         if state.get("reflection_count", 0) > 0:
             rendered += "\n\n" + reflect_prompt.format(
