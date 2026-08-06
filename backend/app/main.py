@@ -7,6 +7,7 @@ exists to protect.
 
 import logging
 import sqlite3
+from functools import lru_cache
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
@@ -14,13 +15,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.config import get_settings
+from app.graph.build import build_graph, initial_state
+from app.llm import get_model
 from app.preprocess import preprocess
+from app.retrieval.store import ChunkStore
 from app.schemas import (
     AnalyzeRequest,
     AnalyzeResponse,
-    Contact,
     MetaResponse,
-    RedFlag,
     SimilarScam,
 )
 
@@ -47,12 +49,18 @@ async def validation_error(request: Request, exc: RequestValidationError) -> JSO
 
 @app.exception_handler(Exception)
 async def unhandled_error(request: Request, exc: Exception) -> JSONResponse:
+    # Type name only — exception text from a provider can echo the input.
     logger.error("analysis failed: %s", type(exc).__name__)
     return JSONResponse(
         status_code=500,
         content={"error": {"code": "ANALYSIS_FAILED",
                            "message": "Something went wrong. Please try again."}},
     )
+
+
+@lru_cache
+def get_graph():
+    return build_graph(get_model(), ChunkStore())
 
 
 def _kb_meta() -> tuple[str, int]:
@@ -87,35 +95,31 @@ async def analyze(request: AnalyzeRequest) -> AnalyzeResponse:
     pre = preprocess(request.text)
     freshness, _ = _kb_meta()
 
-    # Stubbed graph — replaced in T13 by the real LangGraph pipeline.
-    return AnalyzeResponse(
-        verdict="SCAM",
-        confidence=0.91,
-        reflected=False,
+    state = get_graph().invoke(initial_state(
+        redacted_text=pre.redacted_text,
         message_type=pre.message_type,
         redactions=pre.redactions,
-        red_flags=[
-            RedFlag(
-                label="Claims your account is on hold",
-                detail="Real suspensions appear when you log in, not as a text with a link.",
-                chunk_id="lure-account-suspended",
-            )
-        ],
-        explanation="Scam po ito. Ginagaya ng mensahe ang bangko para kunin ang login mo.",
-        next_steps=[
-            "Huwag i-click ang link.",
-            "I-block at i-delete ang mensahe.",
-        ],
-        contacts=[
-            Contact(organisation="Inter-Agency Response Center (I-ARC)", hotline="1326",
-                    url="https://www.cybersecurity.ph/cybercrime-reporting/"),
-        ],
-        similar_scams=[
-            SimilarScam(
-                text="BDO ALERT Your online access is suspended. Reactivate here bdo-verify.xyz/login",
-                scam_type="bank-impersonation",
-            )
-        ],
+        output_language=request.language,
+    ))
+
+    advice = state["advice"]
+    similar = [
+        SimilarScam(text=chunk.text, scam_type=chunk.scam_type)
+        for chunk in state.get("retrieved", [])
+        if chunk.parent_type == "message_example"
+    ][:3]
+
+    return AnalyzeResponse(
+        verdict=state["verdict"],
+        confidence=state["confidence"],
+        reflected=state.get("reflection_count", 0) > 0,
+        message_type=pre.message_type,
+        redactions=pre.redactions,
+        red_flags=state.get("red_flags", []),
+        explanation=advice.explanation,
+        next_steps=advice.next_steps,
+        contacts=advice.contacts,
+        similar_scams=similar,
         kb_freshness=freshness,
         model_id=settings.model_id,
     )
