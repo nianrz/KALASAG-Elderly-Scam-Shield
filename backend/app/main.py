@@ -8,11 +8,13 @@ exists to protect.
 import logging
 import sqlite3
 from functools import lru_cache
+from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.config import get_settings
 from app.graph.build import build_graph, initial_state
@@ -124,3 +126,14 @@ async def analyze(request: AnalyzeRequest) -> AnalyzeResponse:
         kb_freshness=freshness,
         model_id=settings.model_id,
     )
+
+
+# Built frontend, served from the same origin as /api/* so deployment needs no
+# CORS list and no API base URL. Mounted last: routes match in registration
+# order and a mount at / would otherwise swallow /api/*. Absent in dev and in
+# tests, where vite serves the frontend — StaticFiles raises if the directory
+# is missing, hence the guard.
+FRONTEND_DIST = Path(__file__).resolve().parents[1] / "static"
+
+if FRONTEND_DIST.is_dir():
+    app.mount("/", StaticFiles(directory=FRONTEND_DIST, html=True), name="frontend")

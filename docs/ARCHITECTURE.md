@@ -52,6 +52,8 @@ backend/
   pyproject.toml
   app/
     main.py           FastAPI: POST /api/analyze, GET /api/health, GET /api/meta
+                      + mounts static/ as the frontend when deployed
+    static/           built frontend, deploy only — gitignored, absent in dev
     config.py         settings from env
     llm.py            the provider switch — the only module importing a provider SDK
     schemas.py        pydantic request/response models
@@ -268,6 +270,17 @@ The `embedding` column ships unpopulated. We populate it with our local model on
 `GET /api/health` → liveness. `GET /api/meta` → `kb_freshness`, `model_id`, chunk count. The frontend calls `/api/meta` once at load for the freshness badge.
 
 Errors return `{ "error": { "code": "...", "message": "..." } }` with a user-safe message. **Provider errors never echo the request body**, which would leak the input we spent preprocessing to protect.
+
+## Serving
+
+The frontend calls **relative** paths (`/api/analyze`, `/api/meta`). It never holds a base URL, in dev or in production. Two consequences, both deliberate:
+
+- **In dev**, vite proxies `/api` to `localhost:8000` (`vite.config.ts`). Same origin, so there is no CORS to configure.
+- **In deployment**, `main.py` mounts the built frontend from `backend/static/` at `/`, so one uvicorn process serves the app and the API on one port. Again same origin.
+
+The mount is registered last in `main.py` because FastAPI matches routes in registration order — a mount at `/` declared earlier would swallow `/api/*`. It is guarded by `FRONTEND_DIST.is_dir()`, since `StaticFiles` raises at construction when the directory is missing; `backend/static/` is gitignored and absent in dev and CI, so the mount is inert everywhere but a deployed box.
+
+Single-origin was chosen over hosting the frontend separately (Vercel was the alternative considered) because a static host serves HTTPS while the deployment target serves plain HTTP on a non-standard port, and browsers block mixed-content `fetch` unconditionally. Fixing that needs a certificate for a domain we do not control. Splitting the origins would also add a CORS allowlist and an API base URL config — work spent to make the app strictly worse. Full procedure in `docs/DEPLOYMENT.md`.
 
 ## Testing
 

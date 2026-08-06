@@ -168,6 +168,7 @@ Read `CLAUDE.md` first — conventions, ownership, and the pipeline invariants t
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Graph, state, API contract |
 | [`docs/DESIGN.md`](docs/DESIGN.md) | UI/UX spec, accessibility, bilingual copy |
 | [`docs/TASKS.md`](docs/TASKS.md) | Ordered build tasks |
+| [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) | Deploying to the DLSU ALTDSI VM |
 | [`qa/TEST-PLAN.md`](qa/TEST-PLAN.md) | Test strategy and coverage map |
 
 **If you change something a doc describes, update the doc in the same commit.** The map of what-changes-what is in `CLAUDE.md`.

@@ -19,6 +19,9 @@ node_modules/
 frontend/dist/
 *.tsbuildinfo
 
+# Deploy artifact — frontend/dist copied here so FastAPI serves it same-origin
+backend/static/
+
 # Cypress artifacts
 qa/cypress/screenshots/
 qa/cypress/videos/
