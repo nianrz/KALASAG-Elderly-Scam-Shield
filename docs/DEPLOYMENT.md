@@ -126,30 +126,54 @@ cd .. && rm -rf backend/static && cp -R frontend/dist backend/static
 `backend/` means a single rsync of the repo carries the app and its frontend
 together, with no second copy step to forget.
 
-### 3. Copy the repo to the VM
+### 3. Upload to the VM
 
-`rsync`, not `git clone`. Three files the app cannot run without are gitignored and
+Git is not the transport. Three files the app cannot run without are gitignored and
 would never survive a clone: `knowledge-base/out/kb.sqlite`, `backend/.env`, and
-the `backend/static/` build from step 2. rsync copies the working tree, so it
-carries all of them.
+the `backend/static/` build from step 2.
 
-Run from the Mac. It will prompt for the password once.
+**Build one archive and upload that one file.** Do not drag the project folder into
+VS Code's remote explorer — two reasons, both of which bite silently:
+
+- `backend/.venv` is 903 MB of **macOS** binaries and `frontend/node_modules` is
+  another 138 MB. Neither is usable on Linux, and together they turn a one-second
+  transfer into a very long one.
+- Finder hides dotfiles. Select-all inside a folder does not pick up `backend/.env`
+  unless you have pressed Cmd-Shift-. first, so the single most important file is
+  the one most likely to be left behind.
+
+A tarball sidesteps both: everything needed, nothing else, and it either arrives or
+it does not. Build it on the Mac:
 
 ```bash
 cd /Users/achibukz/Code/GitHub/Elderly-Scam-Shield
 
-rsync -avz --delete -e 'ssh -p 32051' \
-  --exclude '.git' --exclude 'node_modules' --exclude '.venv' \
-  --exclude '__pycache__' --exclude '.pytest_cache' --exclude 'frontend/dist' \
-  ./ root@altdsidccf.dlsu.edu.ph:/root/kalasag/
+COPYFILE_DISABLE=1 tar czf ~/Desktop/kalasag-deploy.tgz \
+  --exclude='__pycache__' --exclude='.pytest_cache' --exclude='.venv' \
+  --exclude='backend/eval/results' \
+  backend/app backend/tests backend/eval backend/pyproject.toml backend/uv.lock \
+  backend/.env backend/.env.example backend/static backend/check_bedrock_connection.py \
+  knowledge-base/out/kb.sqlite docs/DEPLOYMENT.md
 ```
 
-`--exclude '.venv'` matters: the Mac's virtualenv contains macOS binaries that
-would be useless and slow to transfer. The VM builds its own in step 4.
+That is **about 1 MB**. `COPYFILE_DISABLE=1` suppresses the `._` AppleDouble files
+macOS otherwise scatters through the archive.
 
-Then confirm on the VM that all three gitignored files arrived. **This is the most
-common way this deployment fails silently** — a missing KB falls back to the
-fixture and still returns plausible answers:
+The paths are relative to the repo root and must stay that way. `config.py` resolves
+the KB as `<backend>/../knowledge-base/out/kb.sqlite`, so flattening the structure
+sends it back to the fixture.
+
+Then in VS Code Remote-SSH: open the remote window, navigate the Explorer to
+`/root`, and drag `kalasag-deploy.tgz` in. Extract it in the remote terminal:
+
+```bash
+mkdir -p /root/kalasag && tar xzf /root/kalasag-deploy.tgz -C /root/kalasag
+rm /root/kalasag-deploy.tgz
+```
+
+Now confirm all three landed. **This is the most common way this deployment fails
+silently** — a missing KB falls back to the fixture and still returns plausible
+answers, so nothing in the UI looks wrong:
 
 ```bash
 ls -l /root/kalasag/knowledge-base/out/kb.sqlite   # ~1.7 MB
@@ -157,30 +181,72 @@ ls /root/kalasag/backend/static/index.html
 grep -c AWS_BEARER_TOKEN_BEDROCK /root/kalasag/backend/.env
 ```
 
-### 4. Install dependencies
+Delete the local `~/Desktop/kalasag-deploy.tgz` when you are done — it contains the
+Bedrock bearer token in cleartext.
+
+If you would rather not use the VS Code explorer, one `scp` does the same thing:
 
 ```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-source ~/.local/bin/env
+scp -P 32051 ~/Desktop/kalasag-deploy.tgz root@altdsidccf.dlsu.edu.ph:/root/
+```
+
+### 4. Install dependencies — everything inside `/root/kalasag`
+
+A default install scatters across four locations outside the project: the `uv`
+binary in `~/.local/bin`, uv's wheel cache in `~/.cache/uv`, uv's managed Python
+in `~/.local/share/uv/python`, and the HuggingFace model cache in
+`~/.cache/huggingface`. Together that is multiple gigabytes that `rm -rf
+/root/kalasag` would not reclaim.
+
+Redirect all four into `/root/kalasag/.local/` so the deployment is one deletable
+folder. Write this env file first:
+
+```bash
+mkdir -p /root/kalasag/.local
+cat > /root/kalasag/.local/env.sh <<'EOF'
+export UV_CACHE_DIR=/root/kalasag/.local/uv-cache
+export UV_PYTHON_INSTALL_DIR=/root/kalasag/.local/uv-python
+export HF_HOME=/root/kalasag/.local/hf
+export PATH=/root/kalasag/.local/bin:$PATH
+EOF
+```
+
+Then install and sync. **Source that file in every new shell** — including when you
+reattach to tmux later, or uv will silently rebuild its cache in `~`:
+
+```bash
+source /root/kalasag/.local/env.sh
+
+curl -LsSf https://astral.sh/uv/install.sh \
+  | env UV_INSTALL_DIR=/root/kalasag/.local/bin INSTALLER_NO_MODIFY_PATH=1 sh
+
+command -v uv          # must print /root/kalasag/.local/bin/uv
 
 cd /root/kalasag/backend
-uv sync
+UV_TORCH_BACKEND=cpu uv sync
 ```
 
 `uv sync` installs Python 3.13/3.14 itself if the VM lacks it, so no system Python
-setup is needed. **Expect this step to be slow** — `sentence-transformers` pulls
-`torch`, and on Linux the default PyPI wheel is the CUDA build at roughly 2–3 GB.
-It will work (this is a GPU box), it just downloads for a while. If disk or time
-is tight, the CPU wheel is a fraction of the size and entirely sufficient — the
-embedding model is 384-dimensional and runs fine on CPU:
+setup is needed.
+
+**`UV_TORCH_BACKEND=cpu` is deliberate on a GPU box.** `sentence-transformers`
+pulls `torch`, and the default Linux wheel drags in the bundled CUDA runtime —
+roughly 4–5 GB installed against 1.5 GB for the CPU build. The A100 buys nothing
+here: the only local model is a 118M-parameter embedder scoring one short string
+per request, and the actual LLM is remote on Bedrock. Paying 3 GB and a long
+download for an idle GPU is pure cost.
+
+If your `uv` is too old to know that flag it will error rather than silently
+install CUDA. Fall back to:
 
 ```bash
-uv pip install torch --index-url https://download.pytorch.org/whl/cpu
+uv sync && uv pip install torch --index-url https://download.pytorch.org/whl/cpu
 ```
 
 ### 5. Verify the provider, then pre-warm the embedder
 
 ```bash
+source /root/kalasag/.local/env.sh
 cd /root/kalasag/backend
 uv run python check_bedrock_connection.py
 ```
@@ -203,10 +269,14 @@ presentation, which matters more than you would think when a demo misbehaves.
 
 ```bash
 tmux new -s kalasag
+source /root/kalasag/.local/env.sh
 cd /root/kalasag/backend
 uv run uvicorn app.main:app --host 0.0.0.0 --port 80
 # detach with Ctrl-b then d; reattach with: tmux attach -t kalasag
 ```
+
+The `source` line is not optional. tmux starts a fresh shell that has never seen
+those exports, and without them `uv` is not on `PATH` at all.
 
 `--host 0.0.0.0` is required — uvicorn binds `127.0.0.1` by default, which the port
 forward cannot reach. **Do not pass `--reload`**: it watches the filesystem, doubles
@@ -266,22 +336,76 @@ the risk that a curl cannot see.
 
 ## Redeploying after a code change
 
-From the Mac, with the VM process stopped or about to be restarted:
+Rebuild the frontend, rebuild the archive, upload, extract over the top.
 
 ```bash
 cd /Users/achibukz/Code/GitHub/Elderly-Scam-Shield
 cd frontend && npm run build && cd ..
 rm -rf backend/static && cp -R frontend/dist backend/static
 
-rsync -avz --delete -e 'ssh -p 32051' \
-  --exclude '.git' --exclude 'node_modules' --exclude '.venv' \
-  --exclude '__pycache__' --exclude '.pytest_cache' --exclude 'frontend/dist' \
-  ./ root@altdsidccf.dlsu.edu.ph:/root/kalasag/
+COPYFILE_DISABLE=1 tar czf ~/Desktop/kalasag-deploy.tgz \
+  --exclude='__pycache__' --exclude='.pytest_cache' --exclude='.venv' \
+  --exclude='backend/eval/results' \
+  backend/app backend/tests backend/eval backend/pyproject.toml backend/uv.lock \
+  backend/.env backend/.env.example backend/static backend/check_bedrock_connection.py \
+  knowledge-base/out/kb.sqlite docs/DEPLOYMENT.md
 ```
 
-Then restart on the VM: `tmux attach -t kalasag`, Ctrl-C, rerun the uvicorn line.
-Rerun `uv sync` only if a dependency changed. The frontend build is not optional —
-rsync copies `backend/static/`, so a stale build ships silently.
+Upload as in step 3, then on the VM:
+
+```bash
+tar xzf /root/kalasag-deploy.tgz -C /root/kalasag    # overwrites in place
+```
+
+Extracting over the top never touches `/root/kalasag/.local/` or
+`/root/kalasag/backend/.venv/`, since neither is in the archive — so a redeploy
+costs one megabyte, not a re-download of torch. Rerun `uv sync` only if a
+dependency changed.
+
+Then restart: `tmux attach -t kalasag`, Ctrl-C, rerun the uvicorn line.
+
+**The frontend build is not optional.** The archive ships `backend/static/`, so
+skipping `npm run build` silently deploys the previous UI with the new backend.
+
+One caveat of extract-over-the-top: it overwrites and adds but never deletes. If
+you *rename or remove* a source file, that stale file lingers on the VM. For a
+one-week demo that is harmless; if it ever matters, `rm -rf /root/kalasag/backend/app`
+before extracting.
+
+## Storage
+
+Everything lives under `/root/kalasag`. Nothing is installed system-wide, so
+`rm -rf /root/kalasag` reclaims all of it.
+
+Check what you have before starting — the deploy needs roughly 2 GB free:
+
+```bash
+df -h /root
+du -sh /root/kalasag/*  /root/kalasag/.local/*   # after install, to see the split
+```
+
+Estimated footprint with `UV_TORCH_BACKEND=cpu`:
+
+| Path | Size | What |
+|---|---|---|
+| `backend/.venv` | ~1.2–1.5 GB | torch CPU, transformers, scipy, langchain, fastapi |
+| `.local/uv-cache` | ~0.5–1 GB | downloaded wheels — safe to delete after install |
+| `.local/uv-python` | ~130 MB | uv's managed CPython |
+| `.local/hf` | ~120 MB | `intfloat/multilingual-e5-small` |
+| `backend/` + `knowledge-base/` | ~5 MB | app, KB, built frontend |
+| **Total** | **~2–2.7 GB** | ~1.7 GB after pruning the wheel cache |
+
+The default CUDA torch build would put this at **5–6 GB** instead. That is the
+single biggest lever on disk here, and it buys nothing — see step 4.
+
+To reclaim the wheel cache once everything runs:
+
+```bash
+source /root/kalasag/.local/env.sh && uv cache clean
+```
+
+Keep it if you expect to redeploy with changed dependencies; a cold cache means
+re-downloading torch.
 
 ## Risks and gotchas
 
@@ -335,12 +459,23 @@ URL can spend sandbox quota.
 
 ```bash
 tmux kill-session -t kalasag
-# or, if it was installed as a unit:
-systemctl disable --now kalasag
+rm -rf /root/kalasag
 ```
 
-Then rotate `AWS_BEARER_TOKEN_BEDROCK` in the Accenture sandbox — a copy of it is
-sitting in `/root/kalasag/backend/.env` on a shared university machine.
+That is the whole removal — the env-var redirection in step 4 is what makes it
+true, since uv and HuggingFace would otherwise have left gigabytes in `~/.cache`
+and `~/.local/share`. To confirm nothing leaked:
+
+```bash
+du -sh ~/.cache ~/.local 2>/dev/null    # should be near-empty
+```
+
+If you installed the systemd unit, `systemctl disable --now kalasag` and delete
+`/etc/systemd/system/kalasag.service` too — that is the one file that lives outside
+the folder by necessity.
+
+Then rotate `AWS_BEARER_TOKEN_BEDROCK` in the Accenture sandbox — a copy of it sat
+in `/root/kalasag/backend/.env` on a shared university machine.
 
 ## Docs this touches
 
