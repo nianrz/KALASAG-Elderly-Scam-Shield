@@ -13,8 +13,17 @@ def load_prompt(name: str) -> str:
     return (PROMPTS_DIR / f"{name}.md").read_text()
 
 
-def parse_json_reply(content: str):
-    """Models wrap JSON in code fences or prose despite instructions."""
+def parse_json_reply(content):
+    """Models wrap JSON in code fences or prose despite instructions.
+
+    Bedrock Converse returns content as a list of blocks rather than a
+    string; only the text blocks matter here.
+    """
+    if isinstance(content, list):
+        content = "".join(
+            block.get("text", "") if isinstance(block, dict) else str(block)
+            for block in content
+        )
     text = _FENCE.sub("", content.strip()).strip()
     try:
         return json.loads(text)
