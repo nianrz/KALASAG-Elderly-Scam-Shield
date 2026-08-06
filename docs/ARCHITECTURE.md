@@ -112,6 +112,8 @@ class GraphState(TypedDict):
 
     verdict: Verdict                   # detect
     confidence: float                  # detect
+    first_verdict: Verdict             # detect, first pass only
+    first_confidence: float            # detect, first pass only
     red_flags: list[RedFlag]           # detect
     reflection_count: int              # detect
     low_confidence_reason: str | None  # detect → reflect
@@ -299,7 +301,7 @@ The default Cypress viewport is 390×844 because the elderly user is on a phone;
 
 ## Evaluation
 
-`eval/run_eval.py` runs all 55 gold-labelled messages through the full pipeline and emits:
+`eval/run_eval.py` runs all 55 gold-labelled messages through the full pipeline with the reflection threshold forced to 0.95, so nearly every message produces both a first and a second pass. That is what makes the sweep computable from a single run: verdict(t) = second-pass verdict where first-pass confidence < t, else first-pass verdict — `first_verdict`/`first_confidence` in graph state exist for this. Gold labels are binary; SCAM and LIKELY_SCAM count as SCAM, and UNCLEAR counts against the scam class — the conservative mapping, since an UNCLEAR on a real scam is a miss the user pays for. It emits:
 
 - Confusion matrix against `gold_label`.
 - Accuracy, precision, recall, F1.

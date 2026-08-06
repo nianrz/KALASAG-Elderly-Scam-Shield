@@ -50,11 +50,17 @@ def make_detect(model: BaseChatModel):
 
         reply = invoke_with_retry(model, rendered)
         output = DetectOutput.model_validate(parse_json_reply(reply.content))
-        return {
+        result = {
             "verdict": output.verdict,
             "confidence": output.confidence,
             "red_flags": output.red_flags,
             "low_confidence_reason": output.low_confidence_reason,
         }
+        if state.get("reflection_count", 0) == 0:
+            # Preserved across a reflection pass so the eval's threshold
+            # sweep can reconstruct both passes from one run.
+            result["first_verdict"] = output.verdict
+            result["first_confidence"] = output.confidence
+        return result
 
     return detect

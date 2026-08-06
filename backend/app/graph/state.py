@@ -27,6 +27,8 @@ class GraphState(TypedDict, total=False):
 
     verdict: Verdict                   # detect
     confidence: float                  # detect
+    first_verdict: Verdict             # detect, first pass only — eval reads it
+    first_confidence: float            # detect, first pass only
     red_flags: list[RedFlag]           # detect
     reflection_count: int              # detect
     low_confidence_reason: str | None  # detect → reflect
