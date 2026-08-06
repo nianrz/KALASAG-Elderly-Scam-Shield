@@ -102,7 +102,7 @@ There is no `SAFE`. Every verdict renders with a verify-independently line. This
 | S4 | The self-reflection loop fires on low confidence and fires at most once. | Unit test with a fake LLM. |
 | S5 | No eval-set message is retrievable from the KB. | Verification gate in the KB build. |
 | S6 | A native speaker judges the Tagalog output as plain Taglish rather than formal Tagalog. | Team review on 10 outputs. |
-| S7 | Switching `SHIELD_MODEL` between two providers requires no code change. | Run the demo on both. |
+| S7 | Switching `LLM_MODEL` between two providers requires no code change. | Run the demo on both. |
 | S8 | Every user-facing state in `DESIGN.md` — four verdicts, both languages, and every error path — is covered by an automated E2E spec. | `npm run e2e` green in `qa/`. |
 | S9 | The accessibility rules in N2 are asserted automatically, not eyeballed. | `qa/cypress/e2e/a11y/accessibility.cy.ts`. |
 | S10 | The frontend and the API agree on the response contract. | `npm run e2e:smoke` against the live backend. |

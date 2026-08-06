@@ -8,7 +8,21 @@ STSP001 capstone. A web app where an elderly Filipino or their caregiver pastes 
 
 **Renamed to Kalasag on 2026-08-06.** In the UI the product is just **Kalasag**; `Kalasag — Elderly Scam Shield` is the full form for doc titles and the deck.
 
-The rename is deliberately **surface-only**. `SHIELD_MODEL` and the other `SHIELD_*` env vars, `ShieldState`, and the `scam-shield-backend` package name are unchanged — a stale `.env` does not error, it silently falls back to defaults, and breaking every teammate's environment a week before the presentation buys nothing a reader can see.
+**The env vars were renamed with it.** `SHIELD_*` was a product-name prefix, so it pointed at a name that no longer exists. The replacements are named for what they configure rather than for the app:
+
+| Was | Now |
+|---|---|
+| `SHIELD_MODEL` | `LLM_MODEL` |
+| `SHIELD_MAX_TOKENS` | `LLM_MAX_TOKENS` |
+| `SHIELD_RETRY_BACKOFF` | `LLM_RETRY_BACKOFF` |
+| `SHIELD_CONFIDENCE_THRESHOLD` | `CONFIDENCE_THRESHOLD` |
+| `SHIELD_KB_PATH` | `KB_PATH` |
+
+The last two are unprefixed on purpose — the confidence threshold gates the graph's reflection edge and `KB_PATH` points at a SQLite file, so neither is an LLM setting and `LLM_KB_PATH` would have been a category error.
+
+**Update your `backend/.env` by hand.** A leftover `SHIELD_*` var does not error — pydantic-settings just doesn't see it and uses the default, so the app runs happily on the wrong model. Nothing in the logs will look wrong.
+
+Still unchanged: the `scam-shield-backend` and `qa` package names, which are internal and cost a lockfile churn to move.
 
 Docs dated before 2026-08-06 — the mentor consultation note, the canonical proposal, `docs/superpowers/**` — still say "Elderly Scam Shield". That is the record of what the project was called then, not a stale doc. Do not rewrite them.
 
@@ -93,23 +107,23 @@ Vitest is used rather than Jest because the frontend is Vite: it reads `vite.con
 The model is swappable by env var. All model access goes through `llm.py`; no other module imports a provider SDK.
 
 ```
-SHIELD_MODEL=google_genai:gemini-2.5-flash   # default — free tier
-SHIELD_MODEL=google_genai:gemini-2.5-flash-lite  # free tier, cheapest quota
-SHIELD_MODEL=google_genai:gemini-2.5-pro     # NOT on the free tier — quota is 0
-SHIELD_MODEL=bedrock_converse:...            # Accenture sandbox
+LLM_MODEL=google_genai:gemini-2.5-flash   # default — free tier
+LLM_MODEL=google_genai:gemini-2.5-flash-lite  # free tier, cheapest quota
+LLM_MODEL=google_genai:gemini-2.5-pro     # NOT on the free tier — quota is 0
+LLM_MODEL=bedrock_converse:...            # Accenture sandbox
 ```
 
 **This project pays for no LLM API.** We run on free tiers and the Accenture Bedrock sandbox. Do not add a paid provider key or a dependency that assumes one.
 
 Gemini Flash is the default because the key is free, needs no card, and the Bedrock sandbox model list is still unconfirmed (open question 2 in the PRD). Bedrock may itself serve Claude models under `anthropic.claude-*` IDs — that is AWS billing on the sandbox, not a key we buy, and it is fine.
 
-**Never pass sampling parameters — no `temperature`, `top_p`, `top_k`.** Behaviour is steered by the prompt. This is a provider-portability rule, not a per-model quirk: what each provider accepts differs, some reject these outright, and a parameter that works on one `SHIELD_MODEL` and 400s on another defeats the whole point of the switch. Passing none of them works everywhere.
+**Never pass sampling parameters — no `temperature`, `top_p`, `top_k`.** Behaviour is steered by the prompt. This is a provider-portability rule, not a per-model quirk: what each provider accepts differs, some reject these outright, and a parameter that works on one `LLM_MODEL` and 400s on another defeats the whole point of the switch. Passing none of them works everywhere.
 
 **`max_tokens` may bound reasoning as well as visible output**, depending on the model. Leave headroom or responses truncate mid-answer.
 
 **Free tiers rate-limit hard.** A full eval run is roughly 200 calls; Gemini's free tier is on the order of 10–15 requests per minute. `llm.py` owns retry-with-backoff on 429 — no caller should implement its own.
 
-**Embeddings are not the chat provider.** Retrieval uses a local `sentence-transformers` model with a fixed 384 dimension. Switching `SHIELD_MODEL` must never require re-embedding the KB.
+**Embeddings are not the chat provider.** Retrieval uses a local `sentence-transformers` model with a fixed 384 dimension. Switching `LLM_MODEL` must never require re-embedding the KB.
 
 ## Pipeline invariants
 

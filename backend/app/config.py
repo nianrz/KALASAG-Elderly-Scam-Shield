@@ -1,4 +1,8 @@
-"""Settings from env. Every SHIELD_* knob is read here and nowhere else."""
+"""Settings from env. Every tunable is read here and nowhere else.
+
+Names describe what they configure, not the app: LLM_* for the provider,
+bare CONFIDENCE_THRESHOLD and KB_PATH for the graph and the corpus.
+"""
 
 from functools import lru_cache
 from pathlib import Path
@@ -11,7 +15,7 @@ BACKEND_ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_KB = BACKEND_ROOT / "tests" / "fixtures" / "kb_fixture.sqlite"
 ENV_FILE = BACKEND_ROOT / ".env"
 
-# Provider credentials share .env with the SHIELD_* settings, but the SDKs read
+# Provider credentials share .env with the settings above, but the SDKs read
 # them from os.environ, which pydantic-settings does not populate. Existing env
 # vars win, so an exported key still overrides the file.
 load_dotenv(ENV_FILE, override=False)
@@ -27,11 +31,11 @@ class Settings(BaseSettings):
         protected_namespaces=(),
     )
 
-    model_id: str = Field("google_genai:gemini-2.5-flash", alias="SHIELD_MODEL")
-    max_tokens: int = Field(4096, alias="SHIELD_MAX_TOKENS")
-    confidence_threshold: float = Field(0.70, alias="SHIELD_CONFIDENCE_THRESHOLD")
-    retry_backoff: float = Field(20.0, alias="SHIELD_RETRY_BACKOFF")
-    kb_path: Path = Field(FIXTURE_KB, alias="SHIELD_KB_PATH")
+    model_id: str = Field("google_genai:gemini-2.5-flash", alias="LLM_MODEL")
+    max_tokens: int = Field(4096, alias="LLM_MAX_TOKENS")
+    confidence_threshold: float = Field(0.70, alias="CONFIDENCE_THRESHOLD")
+    retry_backoff: float = Field(20.0, alias="LLM_RETRY_BACKOFF")
+    kb_path: Path = Field(FIXTURE_KB, alias="KB_PATH")
 
 
 @lru_cache

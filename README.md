@@ -125,17 +125,17 @@ The stubbed E2E suite needs no provider key and no network. Only `e2e:smoke` doe
 
 | Variable | Default | |
 |---|---|---|
-| `SHIELD_MODEL` | `google_genai:gemini-2.5-flash` | Any `init_chat_model` string — `google_genai:` or `bedrock_converse:` |
-| `SHIELD_MAX_TOKENS` | `4096` | May bound reasoning as well as visible output |
-| `SHIELD_CONFIDENCE_THRESHOLD` | `0.70` | Set from the eval sweep, not asserted |
-| `SHIELD_RETRY_BACKOFF` | `20` | Seconds to wait after a 429 |
-| `SHIELD_KB_PATH` | fixture | Point at `knowledge-base/out/kb.sqlite` once it lands |
+| `LLM_MODEL` | `google_genai:gemini-2.5-flash` | Any `init_chat_model` string — `google_genai:` or `bedrock_converse:` |
+| `LLM_MAX_TOKENS` | `4096` | May bound reasoning as well as visible output |
+| `CONFIDENCE_THRESHOLD` | `0.70` | Set from the eval sweep, not asserted |
+| `LLM_RETRY_BACKOFF` | `20` | Seconds to wait after a 429 |
+| `KB_PATH` | fixture | Point at `knowledge-base/out/kb.sqlite` once it lands |
 
 ### Getting a key — we pay for nothing
 
 **Gemini free tier (default).** Get a key at [aistudio.google.com/apikey](https://aistudio.google.com/apikey). Free, no card, takes a minute. Set `GOOGLE_API_KEY`.
 
-**AWS Bedrock (Accenture sandbox).** Set `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN`, and `AWS_REGION`, then point `SHIELD_MODEL` at a `bedrock_converse:` model ID. Which models the sandbox exposes is still unconfirmed — that's open question 2 in the PRD, and the provider switch is what stops it blocking anything.
+**AWS Bedrock (Accenture sandbox).** Set `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN`, and `AWS_REGION`, then point `LLM_MODEL` at a `bedrock_converse:` model ID. Which models the sandbox exposes is still unconfirmed — that's open question 2 in the PRD, and the provider switch is what stops it blocking anything.
 
 > A Claude Pro/Max subscription does **not** cover API calls — that's claude.ai and Claude Code only. We deliberately depend on no paid API key.
 
@@ -186,9 +186,9 @@ Read `CLAUDE.md` first — conventions, ownership, and the pipeline invariants t
 
 **Cypress specs fail with "element not found".** Expected until the UI is built — the specs encode the `DESIGN.md` contract and are the acceptance criteria for tasks T5 and T14. See `qa/TEST-PLAN.md § Known gaps`.
 
-**400 mentioning `temperature` or `top_p`.** Something passed a sampling parameter. We pass none — providers disagree about which they accept, so any of them breaks the `SHIELD_MODEL` switch. Only `backend/app/llm.py` should construct the model.
+**400 mentioning `temperature` or `top_p`.** Something passed a sampling parameter. We pass none — providers disagree about which they accept, so any of them breaks the `LLM_MODEL` switch. Only `backend/app/llm.py` should construct the model.
 
-**429 / rate limited.** Expected on a free tier. `llm.py` backs off and retries; raise `SHIELD_RETRY_BACKOFF` if an eval run keeps tripping it.
+**429 / rate limited.** Expected on a free tier. `llm.py` backs off and retries; raise `LLM_RETRY_BACKOFF` if an eval run keeps tripping it.
 
 **Missing API key / auth error on startup.** You have no `backend/.env`, or its `GOOGLE_API_KEY` is blank. It is gitignored by design, so pulling the repo never gives you one — `cp .env.example .env` and paste your key in.
 

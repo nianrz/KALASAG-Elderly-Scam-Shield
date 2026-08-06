@@ -4,18 +4,18 @@ import pytest
 
 from app.config import FIXTURE_KB, Settings, get_settings
 
-SHIELD_VARS = (
-    "SHIELD_MODEL",
-    "SHIELD_MAX_TOKENS",
-    "SHIELD_CONFIDENCE_THRESHOLD",
-    "SHIELD_RETRY_BACKOFF",
-    "SHIELD_KB_PATH",
+ENV_VARS = (
+    "LLM_MODEL",
+    "LLM_MAX_TOKENS",
+    "CONFIDENCE_THRESHOLD",
+    "LLM_RETRY_BACKOFF",
+    "KB_PATH",
 )
 
 
 @pytest.fixture
 def no_shield_env(monkeypatch):
-    for var in SHIELD_VARS:
+    for var in ENV_VARS:
         monkeypatch.delenv(var, raising=False)
 
 
@@ -30,11 +30,11 @@ def test_defaults_when_nothing_is_set(no_shield_env):
 
 
 def test_reads_every_shield_var(monkeypatch):
-    monkeypatch.setenv("SHIELD_MODEL", "bedrock_converse:anthropic.claude-3-5-sonnet")
-    monkeypatch.setenv("SHIELD_MAX_TOKENS", "2048")
-    monkeypatch.setenv("SHIELD_CONFIDENCE_THRESHOLD", "0.55")
-    monkeypatch.setenv("SHIELD_RETRY_BACKOFF", "5")
-    monkeypatch.setenv("SHIELD_KB_PATH", "/tmp/kb.sqlite")
+    monkeypatch.setenv("LLM_MODEL", "bedrock_converse:anthropic.claude-3-5-sonnet")
+    monkeypatch.setenv("LLM_MAX_TOKENS", "2048")
+    monkeypatch.setenv("CONFIDENCE_THRESHOLD", "0.55")
+    monkeypatch.setenv("LLM_RETRY_BACKOFF", "5")
+    monkeypatch.setenv("KB_PATH", "/tmp/kb.sqlite")
 
     settings = Settings(_env_file=None)
 

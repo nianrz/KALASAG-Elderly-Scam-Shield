@@ -33,7 +33,7 @@ def no_sleep(monkeypatch):
 
 @pytest.fixture
 def fast_backoff(monkeypatch):
-    monkeypatch.setenv("SHIELD_RETRY_BACKOFF", "2")
+    monkeypatch.setenv("LLM_RETRY_BACKOFF", "2")
     llm.get_settings.cache_clear()
     yield
     llm.get_settings.cache_clear()
@@ -47,8 +47,8 @@ def test_get_model_passes_max_tokens_and_no_sampling_params(monkeypatch):
         captured["kwargs"] = kwargs
         return "model"
 
-    monkeypatch.setenv("SHIELD_MODEL", "google_genai:gemini-2.5-pro")
-    monkeypatch.setenv("SHIELD_MAX_TOKENS", "1234")
+    monkeypatch.setenv("LLM_MODEL", "google_genai:gemini-2.5-pro")
+    monkeypatch.setenv("LLM_MAX_TOKENS", "1234")
     llm.get_settings.cache_clear()
     monkeypatch.setattr(llm, "init_chat_model", fake_init)
 
