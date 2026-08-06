@@ -152,7 +152,9 @@ State plainly on the deck that the threshold is calibrated on the same set the a
 ### T19 — Model bake-off · Aki
 Run T17 under two or more `SHIELD_MODEL` values. Compare accuracy, latency, and Tagalog register.
 
-Candidates are whatever we can actually access for free: `google_genai:gemini-2.5-flash`, `google_genai:gemini-2.5-pro`, and whatever the Bedrock sandbox exposes once T0 answers that. Access is the binding constraint, which is exactly the mentor's framing — this table is our answer to "how did you choose your model."
+Candidates are whatever we can actually access for free: `google_genai:gemini-2.5-flash`, `google_genai:gemini-2.5-flash-lite`, and whatever the Bedrock sandbox exposes once T0 answers that. Access is the binding constraint, which is exactly the mentor's framing — this table is our answer to "how did you choose your model."
+
+`gemini-2.5-pro` is **not** a candidate. T1 confirmed live that the free tier grants it zero quota — see `ARCHITECTURE.md § Provider abstraction`. Two Gemini tiers plus Bedrock still makes a real table; if the sandbox turns out to be empty, say in the deck that the bake-off ran across the two models free access allowed.
 
 Cost is not a comparison axis; every candidate is free to us. Say so rather than leaving an empty column.
 

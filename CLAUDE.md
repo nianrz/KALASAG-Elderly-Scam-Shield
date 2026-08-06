@@ -84,7 +84,8 @@ The model is swappable by env var. All model access goes through `llm.py`; no ot
 
 ```
 SHIELD_MODEL=google_genai:gemini-2.5-flash   # default — free tier
-SHIELD_MODEL=google_genai:gemini-2.5-pro     # free tier, stricter rate limit
+SHIELD_MODEL=google_genai:gemini-2.5-flash-lite  # free tier, cheapest quota
+SHIELD_MODEL=google_genai:gemini-2.5-pro     # NOT on the free tier — quota is 0
 SHIELD_MODEL=bedrock_converse:...            # Accenture sandbox
 ```
 
