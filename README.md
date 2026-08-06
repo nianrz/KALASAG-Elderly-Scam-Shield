@@ -62,9 +62,13 @@ You do **not** need to install Python yourself — `uv sync` downloads the right
 ```bash
 cd backend
 uv sync
-cp .env.example .env     # add your provider key
+cp .env.example .env
+# open .env and paste in your GOOGLE_API_KEY — free, no card:
+#   https://aistudio.google.com/apikey
 uv run uvicorn app.main:app --reload --port 8000
 ```
+
+`.env.example` is the committed template listing every variable. `.env` is yours, holds the actual key, and is **gitignored and must stay that way** — a key committed once lives in git history forever and the only real fix is rotating it. If you add a new setting, add it to `.env.example` too, or the next person's setup breaks silently.
 
 **The first run downloads about 590MB** — roughly 470MB of PyTorch and friends into `backend/.venv`, plus a ~120MB embedding model into `~/.cache/huggingface`. On a slow connection this takes a while. **Do it today, not on presentation morning.**
 
@@ -183,6 +187,10 @@ Read `CLAUDE.md` first — conventions, ownership, and the pipeline invariants t
 **400 mentioning `temperature` or `top_p`.** Something passed a sampling parameter. We pass none — providers disagree about which they accept, so any of them breaks the `SHIELD_MODEL` switch. Only `backend/app/llm.py` should construct the model.
 
 **429 / rate limited.** Expected on a free tier. `llm.py` backs off and retries; raise `SHIELD_RETRY_BACKOFF` if an eval run keeps tripping it.
+
+**Missing API key / auth error on startup.** You have no `backend/.env`, or its `GOOGLE_API_KEY` is blank. It is gitignored by design, so pulling the repo never gives you one — `cp .env.example .env` and paste your key in.
+
+**You committed a key by accident.** Rotate it immediately; do not just delete the line. It is in the history and remains readable to anyone who clones.
 
 ---
 
