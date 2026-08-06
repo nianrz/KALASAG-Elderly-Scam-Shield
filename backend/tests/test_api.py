@@ -11,8 +11,8 @@ from app.retrieval.store import ChunkStore
 
 RESPONSE_KEYS = {
     "verdict", "confidence", "reflected", "message_type", "redactions",
-    "red_flags", "explanation", "next_steps", "contacts", "similar_scams",
-    "kb_freshness", "model_id",
+    "redacted_text", "red_flags", "explanation", "next_steps", "contacts",
+    "similar_scams", "kb_freshness", "model_id",
 }
 
 CONCEPTS = json.dumps(["claims account suspended", "urgency deadline"])
@@ -135,6 +135,14 @@ class TestAnalyze:
             json={"text": "Your OTP is 123456", "language": "en"},
         ).json()
         assert body["redactions"] == ["OTP"]
+
+    def test_redacted_text_never_contains_the_value(self, client):
+        body = client.post(
+            "/api/analyze",
+            json={"text": "Your OTP is 123456", "language": "en"},
+        ).json()
+        assert "123456" not in body["redacted_text"]
+        assert "[OTP]" in body["redacted_text"]
 
     def test_pipeline_failure_never_echoes_input(self, client, monkeypatch):
         secret = "my OTP is 987654 do not tell anyone"

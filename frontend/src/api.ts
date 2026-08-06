@@ -23,6 +23,7 @@ export interface AnalyzeResponse {
   reflected: boolean
   message_type: 'sms' | 'email' | 'url'
   redactions: string[]
+  redacted_text: string
   red_flags: RedFlag[]
   explanation: string
   next_steps: string[]

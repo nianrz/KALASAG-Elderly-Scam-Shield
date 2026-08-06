@@ -147,7 +147,11 @@ export default function App() {
           />
           <div className="space-y-3">
             <SimilarScams scams={result.similar_scams} language={language} />
-            <AnalysedMessage redactions={result.redactions} language={language} />
+            <AnalysedMessage
+              redactedText={result.redacted_text}
+              redactions={result.redactions}
+              language={language}
+            />
           </div>
           <p data-testid="uncertainty" className="border-t-2 border-line pt-4 text-ink-soft">
             {t(language, 'result.uncertainty')}

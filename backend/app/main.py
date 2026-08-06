@@ -115,6 +115,7 @@ async def analyze(request: AnalyzeRequest) -> AnalyzeResponse:
         reflected=state.get("reflection_count", 0) > 0,
         message_type=pre.message_type,
         redactions=pre.redactions,
+        redacted_text=pre.redacted_text,
         red_flags=state.get("red_flags", []),
         explanation=advice.explanation,
         next_steps=advice.next_steps,

@@ -2,14 +2,15 @@ import type { Language } from '../i18n'
 import { REDACTION_LABELS, t } from '../i18n'
 
 interface Props {
+  redactedText: string
   redactions: string[]
   language: Language
 }
 
-// The API returns redaction labels only — the raw message is never echoed
-// back, so this section reports what was removed rather than re-rendering
-// the message.
-export function AnalysedMessage({ redactions, language }: Props) {
+// Shows the message exactly as the pipeline analysed it — redacted values
+// appear as [OTP]-style labels, never the originals. Rendered as plain
+// text: any link inside stays inert.
+export function AnalysedMessage({ redactedText, redactions, language }: Props) {
   return (
     <details
       data-testid="analysed-message"
@@ -23,7 +24,10 @@ export function AnalysedMessage({ redactions, language }: Props) {
           </span>
         )}
       </summary>
-      <div className="mt-3 text-base text-ink-soft">
+      <p className="mt-3 rounded-lg bg-paper-deep px-3 py-2 text-base break-words whitespace-pre-wrap">
+        {redactedText}
+      </p>
+      <div className="mt-2 text-base text-ink-soft">
         {redactions.length > 0 ? (
           <>
             <p>{t(language, 'result.redactionNote')}</p>
@@ -36,7 +40,6 @@ export function AnalysedMessage({ redactions, language }: Props) {
         ) : (
           <p>{t(language, 'result.redactionNone')}</p>
         )}
-        <p className="mt-2">{t(language, 'result.messageHidden')}</p>
       </div>
     </details>
   )

@@ -247,6 +247,7 @@ The `embedding` column ships unpopulated. We populate it with our local model on
   "reflected": false,
   "message_type": "sms",
   "redactions": ["OTP"],
+  "redacted_text": "BDO ALERT: Your account is on hold...",
   "red_flags": [
     { "label": "Claims your account is on hold",
       "detail": "Real suspensions appear when you log in, not as a text with a link.",

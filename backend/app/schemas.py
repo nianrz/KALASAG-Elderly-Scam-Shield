@@ -37,6 +37,7 @@ class AnalyzeResponse(BaseModel):
     reflected: bool
     message_type: MessageType
     redactions: list[str]
+    redacted_text: str
     red_flags: list[RedFlag]
     explanation: str
     next_steps: list[str]

@@ -131,7 +131,7 @@ Colour is never the only signal. Each verdict carries an icon, a word, and a dis
 | `NextSteps` | Ordered list. Hotlines rendered as `tel:` links, since these are the numbers we *want* tapped. |
 | `RedFlagList` | Bulleted; each flag is a bold label plus a plain-language detail line. |
 | `SimilarScams` | Collapsed `<details>`. Corpus examples, plain text, links inert. |
-| `AnalysedMessage` | Collapsed `<details>`. Lists what was removed (by label), never the message itself — the API returns redaction labels only, and re-rendering the raw text from client memory would undo the privacy the labels exist to provide. |
+| `AnalysedMessage` | Collapsed `<details>`. Shows the message as the pipeline analysed it — the API's `redacted_text`, where removed values appear as `[OTP]`-style labels — plus a list of what was removed. Never the raw input, and rendered as plain text so links stay inert. |
 | `ContactList` | Rendered inside `NextSteps`, not standalone. Numbers come from the API verbatim. |
 | `ErrorState` | Plain-language failure plus a retry button. Never shows a stack trace or the submitted text. |
 
@@ -167,7 +167,6 @@ Every string exists in both languages in `src/i18n.ts`. English is written for t
 | `input.lengthWarning` | This message is very long. Only the first part will be analysed. | Napakahaba po ng mensahe. Ang unang bahagi lang ang masusuri. |
 | `kb.warning` | The scam database is unavailable right now. Analysis may be less accurate. | Hindi ma-access ang scam database ngayon. Maaaring hindi gaanong tumpak ang pagsusuri. |
 | `result.redactionNote` | We removed these before analysing: | Inalis namin ito bago suriin: |
-| `result.messageHidden` | For your privacy, the full message is not shown again. | Para sa privacy niyo po, hindi na ipinapakita ulit ang buong mensahe. |
 
 Analysing step labels (`analysing.1`–`analysing.4`) follow the sequence in § Analysing, in both languages. Verdict headlines and subtitles (`verdict.*`) follow the § Verdict visual language table.
 
