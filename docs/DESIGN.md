@@ -71,7 +71,7 @@ Steps are shown because a 20-second wait with no feedback reads as broken. They 
 
 ```
 ┌──────────────────────────────────────────────┐
-│  Kalasag                      [ EN | TL ]    │
+│  Kalasag                                     │
 ├──────────────────────────────────────────────┤
 │  ⚠  SCAM ITO                                 │
 │  Huwag mong i-click o sagutin.               │
@@ -124,7 +124,7 @@ Colour is never the only signal. Each verdict carries an icon, a word, and a dis
 
 | Component | Responsibility |
 |---|---|
-| `LanguageToggle` | Two-button segmented control, never a dropdown. Re-renders copy without re-running analysis. Persists to `localStorage`. |
+| `LanguageToggle` | Two-button segmented control, never a dropdown. Re-renders copy without re-running analysis. Persists to `localStorage`. Absent from the result view — see § Language is chosen before the analysis. |
 | `InputPanel` | Textarea, submit button, privacy note, freshness badge. Disabled while analysing. |
 | `AnalysingState` | Static indicator + step label. |
 | `VerdictCard` | Icon, headline, one-line summary. The largest element on screen. |
@@ -134,6 +134,14 @@ Colour is never the only signal. Each verdict carries an icon, a word, and a dis
 | `AnalysedMessage` | Collapsed `<details>`. Shows the message as the pipeline analysed it — the API's `redacted_text`, where removed values appear as `[OTP]`-style labels — plus a list of what was removed. Never the raw input, and rendered as plain text so links stay inert. |
 | `ContactList` | Rendered inside `NextSteps`, not standalone. Numbers come from the API verbatim. |
 | `ErrorState` | Plain-language failure plus a retry button. Never shows a stack trace or the submitted text. |
+
+## Language is chosen before the analysis
+
+The toggle appears on the input, analysing and error screens, and **not on the result screen**.
+
+Only the static strings in `i18n.ts` can switch on demand. The verdict headline, red flags, explanation and next steps are written by the model in the language the request carried, and re-running the analysis to translate them costs another three to four LLM calls and roughly forty seconds. Leaving the toggle on the result view meant a click flipped the labels around the analysis and left the analysis itself in the other language — which reads as a bug, and was reported as one. Removing the control is the honest fix: the choice is offered on every screen where it can still be honoured, and `Check another message` returns the user to one.
+
+This is a deliberate limit, not a gap to close later. Translating a finished verdict on demand would need the Advisor's output cached per language or a second call on toggle; neither is worth a week-out change.
 
 ## Copy
 
@@ -195,7 +203,7 @@ Mobile-first. The elderly user is on a phone; the caregiver may be on a laptop.
 
 - Single column at all widths. Max content width 640px, centred.
 - No layout that requires horizontal scroll at 320px or at 200% zoom.
-- Language toggle stays reachable in the header at every breakpoint.
+- Language toggle stays reachable in the header at every breakpoint, on every screen that still offers the choice.
 
 ## Out of scope
 

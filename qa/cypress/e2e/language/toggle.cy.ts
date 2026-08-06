@@ -47,4 +47,17 @@ describe('Language toggle', () => {
     cy.viewport(1280, 800)
     cy.get('[data-testid="lang-tl"]').should('be.visible')
   })
+
+  // The verdict text, red flags, explanation and next steps come from the
+  // model in the language that was submitted. Toggling on a result would flip
+  // the labels around them and leave the analysis behind, which reads as a
+  // bug. Offering the choice again only where it can still be honoured.
+  it('is hidden once a result is on screen, and back after a reset', () => {
+    cy.analyse('BDO ALERT: Your account is on hold.')
+    cy.get('[data-testid="result"]').should('be.visible')
+    cy.get('[data-testid="lang-en"]').should('not.exist')
+    cy.get('[data-testid="lang-tl"]').should('not.exist')
+    cy.get('[data-testid="reset"]').click()
+    cy.get('[data-testid="lang-tl"]').should('be.visible')
+  })
 })

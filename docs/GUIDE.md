@@ -77,7 +77,7 @@ what the user submitted. The PRD lists these under **Out this term** with the re
    real progress events; the analysis takes ~40s and a spinner alone reads as broken.
 3. **Result.** Verdict card, explanation paragraph, red-flag list, next steps with
    contacts, similar scams, the analysed (redacted) message, a standing uncertainty note,
-   and a "check another message" reset.
+   and a "check another message" reset. No language toggle — see below.
 4. **Error.** One user-safe message and a retry button. Provider errors never surface
    their text.
 
@@ -85,6 +85,12 @@ The language toggle switches all UI chrome instantly from `i18n.ts`. It does **n
 the analysis — the model-authored `explanation` and `next_steps` stay in whatever language
 was selected at submit time. That is requirement F8 read literally: the toggle is free, and
 re-analysing on a toggle would cost another 40s and another four LLM calls.
+
+Which is why the toggle is **hidden on the result screen**. Left there, one click flipped
+the headings and left the analysis under them in the other language; it was reported as a
+bug on 2026-08-07 and it looked like one. The choice is now offered only where it can still
+be honoured — idle, analysing, error — and "check another message" returns the user there.
+`DESIGN.md § Language is chosen before the analysis` is the spec.
 
 ### What happens per request
 

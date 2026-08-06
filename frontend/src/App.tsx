@@ -91,7 +91,9 @@ export default function App() {
             {t(language, 'app.title')}
           </h1>
         </div>
-        <LanguageToggle language={language} onChange={setLanguage} />
+        {/* Hidden on a result: the analysis text is fixed in the language it
+            was requested in, so a toggle there would flip only the labels. */}
+        {phase !== 'result' && <LanguageToggle language={language} onChange={setLanguage} />}
       </header>
 
       {kbUnavailable && (

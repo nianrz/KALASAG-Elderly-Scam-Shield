@@ -142,6 +142,8 @@ Prompts live in `backend/app/prompts/*.md`, not as string literals. They are the
 
 The Advisor targets **plain Filipino/Taglish, not formal Tagalog**. A model told to "reply in Tagalog" drifts toward textbook register (*panganib*, *pagpapatunay*) that is harder to read than Taglish. Specify register explicitly.
 
+**`{output_language}` must be the last instruction in a prompt, and no exemplar may sit below it.** `advise.md` used to state it at the top and then close with a Tagalog next-step example; on a Taglish input with `language=en`, the closing example won and the whole answer came back Taglish — measured 1 in 5 runs on Claude Sonnet 5, while the Detector, whose directive is last, stayed English every time. Restating the directive after the examples took it to 0 in 6. `TestPromptLanguageDirective` in `backend/tests/test_graph.py` holds the ordering. If you add an example to a prompt, put it above the language directive.
+
 ## "Upload this to the VM" — the redeploy runbook
 
 **Trigger this section on any of:** "upload this to our VM", "deploy this", "push it to the VM", "redeploy", "update the VM", "ship it", or any phrasing that means *the code on `main` should now be running at `altdsidccf.dlsu.edu.ph:32050`*. Do not ask which procedure to use — this is the only one.
