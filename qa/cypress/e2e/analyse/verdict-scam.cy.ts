@@ -22,11 +22,12 @@ describe('Analyse — SCAM verdict', () => {
     })
   })
 
-  it('shows what to do before why it is a scam', () => {
-    // A panicking user who reads only the first two blocks has still been served.
-    cy.get('[data-testid="next-steps"]').then(($steps) => {
-      cy.get('[data-testid="red-flags"]').then(($flags) => {
-        expect($steps[0].compareDocumentPosition($flags[0]))
+  it('shows why it is a scam before what to do', () => {
+    // Order changed 2026-08-06 (Aki): understanding the why first, then the
+    // actions. Reverses the original verdict → steps → why order.
+    cy.get('[data-testid="red-flags"]').then(($flags) => {
+      cy.get('[data-testid="next-steps"]').then(($steps) => {
+        expect($flags[0].compareDocumentPosition($steps[0]))
           .to.equal(Node.DOCUMENT_POSITION_FOLLOWING)
       })
     })

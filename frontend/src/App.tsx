@@ -136,15 +136,15 @@ export default function App() {
       {phase === 'result' && result && (
         <main data-testid="result" className="space-y-6">
           <VerdictCard verdict={result.verdict} language={language} />
+          {result.explanation && (
+            <p className="rounded-xl bg-paper-deep px-4 py-3">{result.explanation}</p>
+          )}
+          <RedFlagList flags={result.red_flags} language={language} />
           <NextSteps
             steps={result.next_steps}
             contacts={result.contacts}
             language={language}
           />
-          {result.explanation && (
-            <p className="rounded-xl bg-paper-deep px-4 py-3">{result.explanation}</p>
-          )}
-          <RedFlagList flags={result.red_flags} language={language} />
           <div className="space-y-3">
             <SimilarScams scams={result.similar_scams} language={language} />
             <AnalysedMessage redactions={result.redactions} language={language} />

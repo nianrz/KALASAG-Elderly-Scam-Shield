@@ -76,18 +76,18 @@ Steps are shown because a 20-second wait with no feedback reads as broken. They 
 │  ⚠  SCAM ITO                                 │
 │  Huwag mong i-click o sagutin.               │
 ├──────────────────────────────────────────────┤
-│  ANO ANG GAWIN                               │
-│  1. Huwag i-click ang link.                  │
-│  2. I-block at i-delete ang mensahe.         │
-│  3. Tawagan ang BDO sa (02) 8631-8000.       │
-│  4. I-report sa I-ARC: 1326                  │
-├──────────────────────────────────────────────┤
 │  BAKIT ITO SCAM                              │
 │  • Sinasabing naka-hold ang account mo       │
 │    Ang totoong bangko ay hindi nagte-text    │
 │    ng link para dito.                        │
 │  • May deadline na 24 oras                   │
 │    Pressure tactic ito.                      │
+├──────────────────────────────────────────────┤
+│  ANO ANG GAWIN                               │
+│  1. Huwag i-click ang link.                  │
+│  2. I-block at i-delete ang mensahe.         │
+│  3. Tawagan ang BDO sa (02) 8631-8000.       │
+│  4. I-report sa I-ARC: 1326                  │
 ├──────────────────────────────────────────────┤
 │  ▸ Mga katulad na scam (3)                   │
 │  ▸ Ang mensahe na sinuri  [OTP removed]      │
@@ -99,7 +99,7 @@ Steps are shown because a 20-second wait with no feedback reads as broken. They 
 └──────────────────────────────────────────────┘
 ```
 
-**Order matters and is deliberate.** Verdict → what to do → why. A panicking user who reads only the first two blocks has still been served. Explanation comes third because it is the least urgent, not the least important.
+**Order: verdict → why → what to do.** Changed 2026-08-06 (Aki): the explanation and red flags come before the steps so the user understands *why* before being told what to do — the actions land better once the reason is clear. This reverses the original "verdict → what to do → why" order, which optimised for a panicking user who reads only the first two blocks; the verdict card's own subtitle ("Huwag mong i-click o sagutin.") still carries the immediate instruction for that user.
 
 The uncertainty line at the bottom is required on every verdict including `LIKELY_LEGIT`. It is guardrail text, not a disclaimer to be styled away.
 
