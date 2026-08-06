@@ -4,7 +4,7 @@
  * Excluded from `npm run cy:run`. Run it deliberately:
  *     npm run e2e:smoke
  *
- * Requires the backend on :8000 with a working SHIELD_MODEL and provider key.
+ * Requires the backend on :8000 with a working LLM_MODEL and provider key.
  * Costs real tokens. Its job is to catch contract drift between the frontend
  * and the API — the one thing the stubbed suite structurally cannot see.
  */

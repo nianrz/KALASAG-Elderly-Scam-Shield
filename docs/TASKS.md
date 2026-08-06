@@ -1,4 +1,4 @@
-# Tasks — Elderly Scam Shield
+# Tasks — Kalasag
 
 Ordered by dependency, not by day. Build a thin vertical slice first (T1–T5), then replace stubs one node at a time. Something demoable exists from T5 onward.
 
@@ -18,13 +18,13 @@ This gates the bake-off (T19) and nothing else — the provider abstraction mean
 **Verify:** a Gemini key in `.env` returns a completion; the Bedrock model list is written down, or recorded as still unanswered with who was asked.
 
 ### T1 — Backend scaffold and provider switch · Aki
-Create `backend/` with `uv`, FastAPI, LangGraph, and `app/llm.py` wrapping `init_chat_model(settings.model_id)`. `config.py` reads `SHIELD_MODEL`, `SHIELD_MAX_TOKENS`, `SHIELD_CONFIDENCE_THRESHOLD`, `SHIELD_RETRY_BACKOFF`, `SHIELD_KB_PATH` from env.
+Create `backend/` with `uv`, FastAPI, LangGraph, and `app/llm.py` wrapping `init_chat_model(settings.model_id)`. `config.py` reads `LLM_MODEL`, `LLM_MAX_TOKENS`, `CONFIDENCE_THRESHOLD`, `LLM_RETRY_BACKOFF`, `KB_PATH` from env.
 
 Pass no sampling parameters — providers disagree about which they accept, and any of them breaks the switch.
 
 `llm.py` owns retry-with-backoff on 429. Free tiers rate-limit at roughly 10–15 requests per minute and an eval run is ~200 calls, so this is load-bearing, not defensive.
 
-**Verify:** a one-line script calls the model and prints a response, on two different `SHIELD_MODEL` values, with no code change.
+**Verify:** a one-line script calls the model and prints a response, on two different `LLM_MODEL` values, with no code change.
 
 ### T2 — Pull the embedding model · Aki
 Add `sentence-transformers`, load `intfloat/multilingual-e5-small`, embed a throwaway string.
@@ -143,14 +143,14 @@ Do not weaken a spec to make it pass. If a spec is wrong, fix the spec **and** t
 **Verify:** produces the report; numbers are internally consistent.
 
 ### T18 — Calibrate the threshold · Aki
-Read the sweep, pick the threshold, set `SHIELD_CONFIDENCE_THRESHOLD`, record the reasoning.
+Read the sweep, pick the threshold, set `CONFIDENCE_THRESHOLD`, record the reasoning.
 
 State plainly on the deck that the threshold is calibrated on the same set the accuracy is reported on. That is fitting to the test set and we say so.
 
 **Verify:** the chosen value is in config and its rationale is written down.
 
 ### T19 — Model bake-off · Aki
-Run T17 under two or more `SHIELD_MODEL` values. Compare accuracy, latency, and Tagalog register.
+Run T17 under two or more `LLM_MODEL` values. Compare accuracy, latency, and Tagalog register.
 
 Candidates are whatever we can actually access for free: `google_genai:gemini-2.5-flash`, `google_genai:gemini-2.5-flash-lite`, and whatever the Bedrock sandbox exposes once T0 answers that. Access is the binding constraint, which is exactly the mentor's framing — this table is our answer to "how did you choose your model."
 
@@ -161,7 +161,7 @@ Cost is not a comparison axis; every candidate is free to us. Say so rather than
 **Verify:** side-by-side table; a native speaker ranks the Tagalog output on each.
 
 ### T20 — Integrate the real KB · Nian → Aki
-Nian delivers `knowledge-base/`. Point `SHIELD_KB_PATH` at `knowledge-base/out/kb.sqlite`, embed its chunks, re-run T17.
+Nian delivers `knowledge-base/`. Point `KB_PATH` at `knowledge-base/out/kb.sqlite`, embed its chunks, re-run T17.
 
 If it has not arrived by the time T17 is done, ship on the fixture and say so on the deck.
 

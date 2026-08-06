@@ -1,4 +1,4 @@
-# Test Plan — Elderly Scam Shield
+# Test Plan — Kalasag
 
 **Owner:** Aki (QA) · Companion to `docs/PRD.md` and `docs/DESIGN.md`
 

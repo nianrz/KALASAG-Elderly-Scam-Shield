@@ -2,7 +2,7 @@
 
 No sampling parameters are ever passed. Providers disagree about which they
 accept and some reject them outright, so a temperature that works under one
-SHIELD_MODEL and 400s under another defeats the point of the switch.
+LLM_MODEL and 400s under another defeats the point of the switch.
 """
 
 import time
