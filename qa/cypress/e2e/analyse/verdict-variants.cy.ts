@@ -34,9 +34,16 @@ describe('Analyse — verdict variants', () => {
         cy.get('[data-testid="next-steps"] li').should('have.length.at.least', 1)
       })
 
-      it('never displays a raw confidence percentage', () => {
-        // Self-reported confidence is not calibrated for users to reason about.
-        cy.get('[data-testid="result"]').should('not.contain.text', '%')
+      it('never displays the model confidence', () => {
+        // Self-reported confidence is not calibrated for users to reason
+        // about. The static "100%" in the uncertainty copy is DESIGN.md's own
+        // wording, not a confidence readout, so the assertion targets the
+        // confidence value itself in both its forms.
+        cy.fixture(fixture).then((res) => {
+          cy.get('[data-testid="result"]')
+            .should('not.contain.text', `${Math.round(res.confidence * 100)}%`)
+            .and('not.contain.text', String(res.confidence))
+        })
       })
     })
   })

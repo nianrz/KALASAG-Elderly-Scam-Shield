@@ -38,7 +38,16 @@ describe('Error states', () => {
   it('warns rather than silently truncating a very long message', () => {
     cy.stubAnalyze('verdict-unclear.json')
     cy.visit('/')
-    cy.get('[data-testid="message-input"]').invoke('val', 'a'.repeat(5200)).trigger('input')
+    // jQuery .val() goes through React's value tracker, which then dedupes
+    // the input event — React never sees the change. The native prototype
+    // setter bypasses the tracker so the dispatched event reaches React.
+    cy.get('[data-testid="message-input"]').then(($el) => {
+      const setter = Object.getOwnPropertyDescriptor(
+        window.HTMLTextAreaElement.prototype, 'value',
+      )!.set!
+      setter.call($el[0], 'a'.repeat(5200))
+      $el[0].dispatchEvent(new Event('input', { bubbles: true }))
+    })
     cy.get('[data-testid="length-warning"]').should('be.visible')
   })
 
