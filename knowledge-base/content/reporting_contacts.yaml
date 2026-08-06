@@ -1,0 +1,48 @@
+- contact_id: i-arc-1326
+  organisation: Inter-Agency Response Center (I-ARC)
+  hotline: "1326"
+  email: ""
+  url: https://www.cybersecurity.ph/cybercrime-reporting/
+  covers: >-
+    Joint DICT / CICC / NPC / NTC reporting hotline for cybercrime and online
+    scams. The single number to give first.
+  priority: 1
+  source_id: cybersecurity-ph-reporting
+
+- contact_id: pnp-acg
+  organisation: PNP Anti-Cybercrime Group
+  hotline: ""
+  email: ""
+  url: https://acg.pnp.gov.ph/
+  covers: Criminal complaints for cybercrime, including online fraud and smishing.
+  priority: 2
+  source_id: pnp-acg-advisories
+
+- contact_id: bsp-consumer
+  organisation: Bangko Sentral ng Pilipinas — Consumer Assistance
+  hotline: "(+632) 8811-1277"
+  email: consumeraffairs@bsp.gov.ph
+  url: https://www.bsp.gov.ph/
+  covers: Complaints about banks and BSP-supervised financial institutions.
+  priority: 3
+  source_id: bsp-consumer-advisories
+
+- contact_id: npc
+  organisation: National Privacy Commission
+  hotline: ""
+  email: ""
+  url: https://privacy.gov.ph/
+  covers: Personal-data misuse and breach-driven scams.
+  priority: 4
+  source_id: npc-advisories
+
+- contact_id: ntc-1682
+  organisation: National Telecommunications Commission
+  hotline: "1682"
+  email: ""
+  url: https://ntc.gov.ph/
+  covers: >-
+    Reporting scam text messages to the telco regulator. Cited verbatim in
+    NTC's own public service messages in the corpus.
+  priority: 5
+  source_id: ntc-public-advisory

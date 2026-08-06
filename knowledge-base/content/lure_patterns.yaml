@@ -1,0 +1,139 @@
+- pattern_id: verify-update-account
+  name: Verify or update your account
+  scam_type: bank-impersonation
+  measured_share: 0.34
+  measured_count: 44
+  description: >-
+    Claims the recipient must verify or update their account details, usually
+    via a link, or lose access. The most common bank-impersonation lure.
+  red_flags: >-
+    Asks you to verify an account by SMS link; no bank or e-wallet does this.
+    Link domain is not the bank's official domain. Often a URL shortener.
+  triggers_en: "verify your account; account verification; update your account; verify here; kindly visit"
+  triggers_tl: "i-verify ang iyong account; kailangan i-update; magparehistro; pakiverify"
+  source_id: scottleechua-ph-sms
+
+- pattern_id: account-suspended
+  name: Account suspended or restricted
+  scam_type: bank-impersonation
+  measured_share: 0.24
+  measured_count: 31
+  description: >-
+    States the account is already suspended, restricted, disabled, or on hold,
+    creating alarm before the recipient can check.
+  red_flags: >-
+    Alarming status claim delivered by SMS rather than in the app. Real
+    suspensions appear when you log in, not as a text with a link.
+  triggers_en: "temporarily disabled; account suspended; restricted; on hold; deactivated; final warning"
+  triggers_tl: "naka-hold ang account; sinuspinde; hindi na magagamit; huling babala"
+  source_id: scottleechua-ph-sms
+
+- pattern_id: urgency-deadline
+  name: Urgency deadline
+  scam_type: bank-impersonation
+  measured_share: 0.17
+  measured_count: 22
+  description: >-
+    Attaches a short deadline — 24 hours, tomorrow, immediately — so the
+    recipient acts before verifying through an official channel.
+  red_flags: >-
+    A countdown is a pressure tactic. Any genuine issue will still be there
+    after you call the official hotline.
+  triggers_en: "within 24 hours; expires today; immediately; avoid deactivation tomorrow; act now"
+  triggers_tl: "ngayon din; bukas na; agad; bago mag-expire; huwag palampasin"
+  source_id: scottleechua-ph-sms
+
+- pattern_id: click-this-link
+  name: Click this link
+  scam_type: bank-impersonation
+  measured_share: 0.17
+  measured_count: 22
+  description: >-
+    The payload is the link itself, very often a shortener that hides the
+    destination domain.
+  red_flags: >-
+    Shortened links hide where they go and do not appear on blocklists.
+    Two-thirds of scam messages carry no link at all, so a link is a strong
+    signal but its absence proves nothing.
+  triggers_en: "click here; visit; proceed to; tap this link; continue here"
+  triggers_tl: "pindutin dito; bisitahin; pumunta dito; i-click"
+  source_id: scottleechua-ph-sms
+
+- pattern_id: casino-promo
+  name: Online casino or gambling promotion
+  scam_type: casino
+  measured_share: 0.562
+  measured_count: 465
+  description: >-
+    Deposit-bonus, cashback, free-spin, or jackpot promotions for unlicensed
+    online gambling sites. The single largest category in the corpus and the
+    most likely thing an elderly user will actually paste.
+  red_flags: >-
+    Guaranteed winnings, free money for registering, and throwaway domains.
+    Often names GCash or Maya as a deposit channel, which is not endorsement.
+  triggers_en: "free bonus; deposit bonus; cashback; jackpot; slot; welcome gift; turnover"
+  triggers_tl: "magdeposito; makakuha ng libre; manalo; panalo; magparehistro; recharge; taya"
+  source_id: scottleechua-ph-sms
+
+- pattern_id: job-task-scam
+  name: Job or task scam
+  scam_type: job-task
+  measured_share: 0.025
+  measured_count: 21
+  description: >-
+    Offers easy daily earnings for simple online tasks, then asks for an
+    up-front deposit or personal details.
+  red_flags: "Unsolicited job offer, guaranteed daily rate, contact via personal messaging app."
+  triggers_en: "daily salary; part time; easy income; contact the instructor; commission"
+  triggers_tl: "araw-araw na kita; madaling trabaho; part time; kumita agad"
+  source_id: scottleechua-ph-sms
+
+- pattern_id: loan-offer
+  name: Unsolicited loan offer
+  scam_type: loan
+  measured_share: 0.019
+  measured_count: 16
+  description: Offers fast cash at a low rate, typically with a personal mobile number as contact.
+  red_flags: "Legitimate lenders do not solicit by SMS from personal numbers or ask for advance fees."
+  triggers_en: "avail 50k; low rate; secured process; interested call; cash loan"
+  triggers_tl: "mabilis na cash; mababang interes; text mo lang ako"
+  source_id: scottleechua-ph-sms
+
+- pattern_id: package-delivery
+  name: Package or delivery problem
+  scam_type: package
+  measured_share: 0.017
+  measured_count: 14
+  description: >-
+    Claims a parcel is held pending an unpaid fee or address confirmation.
+    Small in this corpus, but it is one of the two scenarios in the team's
+    own UI prototype.
+  red_flags: "Unexpected parcel, small fee demanded by link, courier not named or misspelled."
+  triggers_en: "parcel on hold; unpaid balance; delivery failed; confirm your address; customs fee"
+  triggers_tl: "naka-hold ang parcel; may bayad pa; kumpirmahin ang address"
+  source_id: scottleechua-ph-sms
+
+- pattern_id: prize-raffle
+  name: Prize or raffle win
+  scam_type: prize
+  measured_share: 0.017
+  measured_count: 14
+  description: Tells the recipient they have won something they never entered.
+  red_flags: "You cannot win a raffle you did not enter. Claim links harvest credentials."
+  triggers_en: "you won; congratulations; claim your prize; lucky winner"
+  triggers_tl: "nanalo ka; maswerteng; i-claim mo na; congrats"
+  source_id: scottleechua-ph-sms
+
+- pattern_id: crypto-investment
+  name: Crypto or investment offer
+  scam_type: crypto
+  measured_share: 0.004
+  measured_count: 3
+  description: >-
+    Investment or trading offers promising outsized returns. Near-absent in
+    SMS despite being prominent in general scam taxonomies — included so the
+    KB can say it is rare rather than being silent about it.
+  red_flags: "Guaranteed returns, time-limited entry, unregistered platform."
+  triggers_en: "guaranteed returns; trading signals; investment opportunity; crypto"
+  triggers_tl: "siguradong kita; puhunan; mag-invest ka na"
+  source_id: scottleechua-ph-sms

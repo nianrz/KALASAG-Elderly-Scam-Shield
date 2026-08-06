@@ -1,0 +1,82 @@
+{
+  "bdo-fraud-advisory": {
+    "bytes": 3599,
+    "error": "The entire bdo.com.ph domain was refused by the claude-in-chrome extension's safety restrictions (both /personal/digitalbanking/account-security and root were blocked; 2 attempts). The user (Nian) supplied a first-hand screenshot of the live #BDOStopScam page (breadcrumb: About BDO / Learn / BDO StopScam) taken from their own browser, which was transcribed verbatim. The retrieved_from URL is inferred from the page breadcrumb and a matching sibling URL found via WebSearch (.../stop-scam/other-advisories); the screenshot did not show the address bar, so this URL is a best-effort reconstruction, not a confirmed exact match. Not captured via get_page_text \u2014 flagged distinctly from the other ok-browser entries for that reason.",
+    "fetched_at": "2026-08-06T00:00:00+00:00",
+    "http_status": null,
+    "status": "ok-browser",
+    "url": "https://www.bdo.com.ph/about-bdo/learn/stop-scam"
+  },
+  "bsp-consumer-advisories": {
+    "bytes": 57,
+    "error": "only 57 chars of text extracted | Browser retry (Step 3) was attempted via claude-in-chrome tools: tabs_context_mcp reported the extension is not connected, tried twice. No page could be loaded, so this source is omitted rather than reconstructed from memory. | Browser retry (this round): the corrected advisories URL (MediaDisp.aspx?ItemId=6533) now 404s, and the root https://www.bsp.gov.ph/ currently serves a genuine 'Website is undergoing maintenance' notice (real text, but no advisory/fraud content) directing visitors to BSP's Facebook/X accounts instead. Two attempts made this round; source remains omitted, not fabricated.",
+    "fetched_at": "2026-08-06T05:25:02+00:00",
+    "http_status": 200,
+    "status": "failed",
+    "url": "https://www.bsp.gov.ph/SitePages/MediaAndResearch/MediaDisp.aspx?ItemId=6533"
+  },
+  "cybersecurity-ph-reporting": {
+    "bytes": 1002,
+    "error": "",
+    "fetched_at": "2026-08-06T05:25:06+00:00",
+    "http_status": 200,
+    "status": "ok",
+    "url": "https://www.cybersecurity.ph/cybercrime-reporting/"
+  },
+  "gcash-fraud-advisory": {
+    "bytes": 2783,
+    "error": "Registered root https://www.gcash.com/ is nav/marketing boilerplate only (no fraud content, confirmed both by script and by browser). Followed a link off the GCash domain family to the official GCash Help Center article 'How can I protect my GCash account?', which carries the actual 'GCash will NEVER ask for your MPIN/OTP' advisory content. Captured via claude-in-chrome browser tools this session; will not reproduce automatically on a scripted rebuild.",
+    "fetched_at": "2026-08-06T00:00:00+00:00",
+    "http_status": null,
+    "status": "ok-browser",
+    "url": "https://help.gcash.com/hc/en-us/articles/19578518834457-How-can-I-protect-my-GCash-account"
+  },
+  "maya-fraud-advisory": {
+    "bytes": 4772,
+    "error": "",
+    "fetched_at": "2026-08-06T05:25:41+00:00",
+    "http_status": 200,
+    "status": "ok",
+    "url": "https://www.maya.ph/help"
+  },
+  "npc-advisories": {
+    "bytes": 17159,
+    "error": "",
+    "fetched_at": "2026-08-06T05:25:03+00:00",
+    "http_status": 200,
+    "status": "ok",
+    "url": "https://privacy.gov.ph/"
+  },
+  "ntc-public-advisory": {
+    "bytes": 2763,
+    "error": "403'd to script. In browser, Cloudflare interstitial auto-resolved after ~12s, then the homepage's 'Notice to the Public' announcement modal (Announcements menu) showed a dated Public Advisory (14/16 July 2026, NTC-EDGE System data disclosure) with genuine phishing/OTP vigilance guidance, plus the sidebar confirms the 24/7 consumer hotline 1682 and consumer@ntc.gov.ph. A third sidebar hotline number was cut off on screen and omitted rather than guessed. Captured via claude-in-chrome browser tools this session; will not reproduce automatically on a scripted rebuild.",
+    "fetched_at": "2026-08-06T00:00:00+00:00",
+    "http_status": null,
+    "status": "ok-browser",
+    "url": "https://ntc.gov.ph/"
+  },
+  "pnp-acg-advisories": {
+    "bytes": 4245,
+    "error": "Registered root https://acg.pnp.gov.ph/ 403'd to script; in browser it served a Cloudflare interstitial that auto-resolved, then showed only thin news-carousel teasers. Navigated to the 'Types of Cybercrime Scams' category (https://acg.pnp.gov.ph/category/cs-scams/) instead, which lists 12 named scam types with descriptions. Each entry ends with literal label text 'Warning signs: Protection:' followed by no list content \u2014 that is the live page's actual current state (transcribed faithfully, not truncated by us). Captured via claude-in-chrome browser tools this session; will not reproduce automatically on a scripted rebuild.",
+    "fetched_at": "2026-08-06T00:00:00+00:00",
+    "http_status": null,
+    "status": "ok-browser",
+    "url": "https://acg.pnp.gov.ph/category/cs-scams/"
+  },
+  "scamwatch-pilipinas": {
+    "bytes": 1249,
+    "error": "",
+    "fetched_at": "2026-08-06T05:25:06+00:00",
+    "http_status": 200,
+    "status": "ok",
+    "url": "https://scamwatchpilipinas.com/"
+  },
+  "unionbank-fraud-advisory": {
+    "bytes": 3275,
+    "error": "Registered root https://www.unionbankph.com/ 403'd to script; loaded fine in browser but is nav/marketing only. Followed the 'Safe Surfing Guidelines' tab under Privacy - Security (?report=4 query selects that tab client-side) to reach the real Anti-Fraud & Anti-Phishing Guidelines content. Captured via claude-in-chrome browser tools this session; will not reproduce automatically on a scripted rebuild.",
+    "fetched_at": "2026-08-06T00:00:00+00:00",
+    "http_status": null,
+    "status": "ok-browser",
+    "url": "https://www.unionbankph.com/privacy-security?report=4"
+  }
+}
