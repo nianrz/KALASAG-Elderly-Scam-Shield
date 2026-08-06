@@ -10,7 +10,8 @@ FIXTURE_KB = BACKEND_ROOT / "tests" / "fixtures" / "kb_fixture.sqlite"
 
 @pytest.fixture(scope="session")
 def kb_path() -> Path:
-    """The fixture knowledge base. Built by tests/fixtures/make_fixture.py."""
+    """The fixture knowledge base, built on demand."""
     if not FIXTURE_KB.exists():
-        pytest.skip(f"{FIXTURE_KB.name} not built — run tests/fixtures/make_fixture.py")
+        from tests.fixtures.make_fixture import build
+        build()
     return FIXTURE_KB

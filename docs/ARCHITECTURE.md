@@ -135,9 +135,11 @@ Redacts in this order, each replaced by its label:
 |---|---|
 | 4–8 digits near `otp`, `code`, `pin`, `verification` | `[OTP]` |
 | 13–19 digit runs (card numbers) | `[CARD]` |
-| 10–16 digit runs (account numbers) | `[ACCOUNT]` |
 | PH mobile formats: `09xxxxxxxxx`, `+639xxxxxxxxx` | `[PHONE]` |
+| 10–16 digit runs (account numbers) | `[ACCOUNT]` |
 | Email addresses | `[EMAIL]` |
+
+`PHONE` runs before `ACCOUNT` because a PH mobile number is itself an 11-digit run — the generic account pattern firing first would mislabel every phone number as an account. More specific patterns fire first throughout.
 
 URLs are **not** redacted — the domain is the primary signal the Detector needs.
 
