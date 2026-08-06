@@ -27,6 +27,9 @@ Verified on 2026-08-06:
 | `systemctl` / `tmux` / `git` / `rsync` on VM | all present |
 | Single-origin serving (`/` + `/api/*` one process) | verified locally |
 | Backend suite with the static mount | 75 passed |
+| VM disk | 251 GB total, 131 GB free |
+| Bedrock token + `global.` model ID **from the VM** | **yes** — `check_bedrock_connection.py` returned `pong` |
+| Install footprint | 5.0 GB under `/root/kalasag` |
 
 On the egress check: a 404 is proof of success, not failure. It means a real HTTPS
 response came back from AWS with a certificate curl validated — a blocked or
@@ -214,34 +217,44 @@ EOF
 Then install and sync. **Source that file in every new shell** — including when you
 reattach to tmux later, or uv will silently rebuild its cache in `~`:
 
+**Paste these one line at a time.** The VS Code Remote-SSH terminal hard-wraps
+pasted input at roughly 70 characters and turns the wrap into a real newline. A
+multi-line heredoc gets shredded, and a long `export` splits into a bare `export`
+plus an unexported assignment — which looks fine in `cat` but silently leaves the
+variable out of the environment. Keep every pasted command short, and verify with
+`env | grep -E 'UV_|HF_HOME'` rather than `cat`, because only `env` proves the
+variables were actually exported.
+
 ```bash
 source /root/kalasag/.local/env.sh
-
-curl -LsSf https://astral.sh/uv/install.sh \
-  | env UV_INSTALL_DIR=/root/kalasag/.local/bin INSTALLER_NO_MODIFY_PATH=1 sh
+export UV_INSTALL_DIR=/root/kalasag/.local/bin
+export INSTALLER_NO_MODIFY_PATH=1
+curl -LsSf https://astral.sh/uv/install.sh | sh
 
 command -v uv          # must print /root/kalasag/.local/bin/uv
 
 cd /root/kalasag/backend
-UV_TORCH_BACKEND=cpu uv sync
+uv sync
 ```
 
 `uv sync` installs Python 3.13/3.14 itself if the VM lacks it, so no system Python
-setup is needed.
+setup is needed. It takes about six minutes here, almost all of it download.
 
-**`UV_TORCH_BACKEND=cpu` is deliberate on a GPU box.** `sentence-transformers`
-pulls `torch`, and the default Linux wheel drags in the bundled CUDA runtime —
-roughly 4–5 GB installed against 1.5 GB for the CPU build. The A100 buys nothing
-here: the only local model is a 118M-parameter embedder scoring one short string
-per request, and the actual LLM is remote on Bedrock. Paying 3 GB and a long
-download for an idle GPU is pure cost.
+**This installs the CUDA torch build, and that is fine.** `sentence-transformers`
+pulls `torch`, and on Linux `uv.lock` pins the variant that drags in the bundled
+CUDA runtime (`nvidia-cublas`, `nvidia-cudnn`, `triton`, …). Measured result: **5.0
+GB** under `/root/kalasag`, against ~1.7 GB for a CPU build.
 
-If your `uv` is too old to know that flag it will error rather than silently
-install CUDA. Fall back to:
+`UV_TORCH_BACKEND=cpu` does **not** change this, despite looking like it should.
+That variable steers *resolution*; `uv sync` installs what `uv.lock` already pins,
+so it is silently ignored. Forcing CPU means `uv lock --torch-backend=cpu`, which
+rewrites the lockfile for everyone on the team.
 
-```bash
-uv sync && uv pip install torch --index-url https://download.pytorch.org/whl/cpu
-```
+Not worth doing here. The VM has 131 GB free, and CUDA torch has an upside on this
+box: `SentenceTransformer` auto-selects the GPU when one is available, so the
+embedder runs on the A100 instead of the CPU. Revisit only if deploying somewhere
+disk-constrained, and then change the lock deliberately rather than hoping an env
+var catches it.
 
 ### 5. Verify the provider, then pre-warm the embedder
 
@@ -255,12 +268,19 @@ This is the real gate. It exercises the actual model ID and bearer token, not ju
 network reachability. It must pass before you go further.
 
 Then pull the embedding model down ahead of time. `intfloat/multilingual-e5-small`
-(~120 MB) downloads from HuggingFace on first use, and you do not want that
-happening during the first demo request:
+(~120 MB) downloads from HuggingFace on first use, and with the CUDA build there is
+also a one-time GPU init on top. Neither should happen during the first demo
+request:
 
 ```bash
-uv run python -c "from app.retrieval.embedder import embed_queries; embed_queries(['warm'])"
+echo "from app.retrieval.embedder import embed_queries" > w.py
+echo "embed_queries(['x'])" >> w.py
+uv run python w.py
+rm w.py
 ```
+
+Written to a file rather than `python -c "…"` because that one-liner is 92
+characters and the terminal mangles anything past ~70.
 
 ### 6. Run it
 
@@ -385,21 +405,19 @@ df -h /root
 du -sh /root/kalasag/*  /root/kalasag/.local/*   # after install, to see the split
 ```
 
-Estimated footprint with `UV_TORCH_BACKEND=cpu`:
+**Measured total after install: 5.0 GB.** Roughly:
 
-| Path | Size | What |
-|---|---|---|
-| `backend/.venv` | ~1.2–1.5 GB | torch CPU, transformers, scipy, langchain, fastapi |
-| `.local/uv-cache` | ~0.5–1 GB | downloaded wheels — safe to delete after install |
-| `.local/uv-python` | ~130 MB | uv's managed CPython |
-| `.local/hf` | ~120 MB | `intfloat/multilingual-e5-small` |
-| `backend/` + `knowledge-base/` | ~5 MB | app, KB, built frontend |
-| **Total** | **~2–2.7 GB** | ~1.7 GB after pruning the wheel cache |
+| Path | What |
+|---|---|
+| `backend/.venv` | torch + the CUDA runtime, transformers, scipy, langchain, fastapi — the bulk of it |
+| `.local/uv-cache` | downloaded wheels; safe to delete once everything runs |
+| `.local/uv-python` | uv's managed CPython, ~130 MB |
+| `.local/hf` | `intfloat/multilingual-e5-small`, ~120 MB |
+| `backend/` + `knowledge-base/` | app, KB, built frontend — ~5 MB |
 
-The default CUDA torch build would put this at **5–6 GB** instead. With 131 GB free
-that is affordable, so the reason to avoid it is not capacity — it is the extra
-~3 GB of download on a campus link, in exchange for a GPU that never runs anything.
-See step 4.
+A CPU-only torch build would land near 1.7 GB, but the lockfile pins CUDA on Linux
+and changing that is a team-wide decision — see step 4. At 131 GB free it does not
+matter here.
 
 To reclaim the wheel cache once everything runs:
 
