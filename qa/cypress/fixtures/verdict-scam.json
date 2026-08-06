@@ -3,7 +3,10 @@
   "confidence": 0.91,
   "reflected": false,
   "message_type": "sms",
-  "redactions": ["OTP"],
+  "redactions": [
+    "OTP"
+  ],
+  "redacted_text": "BDO ALERT: Your account is on hold. Your [OTP] will expire. Verify: http://bdo-verify.cfd",
   "red_flags": [
     {
       "label": "Sinasabing naka-hold ang account mo",

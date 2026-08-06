@@ -112,6 +112,8 @@ class GraphState(TypedDict):
 
     verdict: Verdict                   # detect
     confidence: float                  # detect
+    first_verdict: Verdict             # detect, first pass only
+    first_confidence: float            # detect, first pass only
     red_flags: list[RedFlag]           # detect
     reflection_count: int              # detect
     low_confidence_reason: str | None  # detect → reflect
@@ -135,9 +137,11 @@ Redacts in this order, each replaced by its label:
 |---|---|
 | 4–8 digits near `otp`, `code`, `pin`, `verification` | `[OTP]` |
 | 13–19 digit runs (card numbers) | `[CARD]` |
-| 10–16 digit runs (account numbers) | `[ACCOUNT]` |
 | PH mobile formats: `09xxxxxxxxx`, `+639xxxxxxxxx` | `[PHONE]` |
+| 10–16 digit runs (account numbers) | `[ACCOUNT]` |
 | Email addresses | `[EMAIL]` |
+
+`PHONE` runs before `ACCOUNT` because a PH mobile number is itself an 11-digit run — the generic account pattern firing first would mislabel every phone number as an account. More specific patterns fire first throughout.
 
 URLs are **not** redacted — the domain is the primary signal the Detector needs.
 
@@ -243,6 +247,7 @@ The `embedding` column ships unpopulated. We populate it with our local model on
   "reflected": false,
   "message_type": "sms",
   "redactions": ["OTP"],
+  "redacted_text": "BDO ALERT: Your account is on hold...",
   "red_flags": [
     { "label": "Claims your account is on hold",
       "detail": "Real suspensions appear when you log in, not as a text with a link.",
@@ -297,7 +302,7 @@ The default Cypress viewport is 390×844 because the elderly user is on a phone;
 
 ## Evaluation
 
-`eval/run_eval.py` runs all 55 gold-labelled messages through the full pipeline and emits:
+`eval/run_eval.py` runs all 55 gold-labelled messages through the full pipeline with the reflection threshold forced to 0.95, so nearly every message produces both a first and a second pass. That is what makes the sweep computable from a single run: verdict(t) = second-pass verdict where first-pass confidence < t, else first-pass verdict — `first_verdict`/`first_confidence` in graph state exist for this. Gold labels are binary; SCAM and LIKELY_SCAM count as SCAM, and UNCLEAR counts against the scam class — the conservative mapping, since an UNCLEAR on a real scam is a miss the user pays for. It emits:
 
 - Confusion matrix against `gold_label`.
 - Accuracy, precision, recall, F1.

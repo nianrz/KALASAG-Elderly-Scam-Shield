@@ -34,7 +34,7 @@ describe('Smoke — live pipeline', () => {
       expect(res.status).to.equal(200)
       expect(res.body).to.include.keys(
         'verdict', 'confidence', 'reflected', 'message_type', 'redactions',
-        'red_flags', 'explanation', 'next_steps', 'contacts',
+        'redacted_text', 'red_flags', 'explanation', 'next_steps', 'contacts',
         'similar_scams', 'kb_freshness', 'model_id',
       )
       expect(res.body.verdict).to.be.oneOf(['SCAM', 'LIKELY_SCAM', 'UNCLEAR', 'LIKELY_LEGIT'])

@@ -44,7 +44,7 @@ One file per feature. A failing spec names the broken feature in its filename.
 | Spec | Feature | Key assertions |
 |---|---|---|
 | `analyse/verdict-scam.cy.ts` | The SCAM path | Verdict leads; icon + word, not colour alone; steps precede explanation; uncertainty line present; **no clickable link from the message** |
-| `analyse/verdict-variants.cy.ts` | All four verdicts | Distinct headline each; uncertainty line on every one; **`LIKELY_LEGIT` is not green**; no raw confidence % anywhere |
+| `analyse/verdict-variants.cy.ts` | All four verdicts | Distinct headline each; uncertainty line on every one; **`LIKELY_LEGIT` is not green**; the model's confidence value never renders (the static "100%" in the uncertainty copy is DESIGN.md wording, not a confidence readout) |
 | `analyse/next-steps.cy.ts` | Steps and contacts | Ordered list; **hotline matches the API byte for byte**; official numbers are `tel:` links |
 | `analyse/red-flags.cy.ts` | Flags and collapsibles | Label + detail per flag; sections collapsed by default; empty sections omitted, not shown empty; no fabricated filler flag |
 | `language/toggle.cy.ts` | EN/TL toggle | Segmented control not dropdown; copy switches; `<html lang>` follows; language reaches the API; persists across reload |

@@ -4,6 +4,7 @@
   "reflected": true,
   "message_type": "sms",
   "redactions": [],
+  "redacted_text": "Congratulations! Claim your prize today, contact us to receive it.",
   "red_flags": [
     {
       "label": "Nag-aalok ng libreng pera kapag nag-register",

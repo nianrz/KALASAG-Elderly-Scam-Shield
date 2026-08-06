@@ -1,18 +1,76 @@
-@import "tailwindcss";
+@import '@fontsource/atkinson-hyperlegible/400.css';
+@import '@fontsource/atkinson-hyperlegible/700.css';
+@import '@fontsource/fraunces/600.css';
+@import '@fontsource/fraunces/700.css';
+@import 'tailwindcss';
 
-/* Accessibility baseline — see docs/DESIGN.md.
-   18px body is the floor: the primary user is elderly and often reading on a
-   phone with reduced vision. */
+/*
+ * Kalasag — warm paper-and-ink, not tech dashboard.
+ * Atkinson Hyperlegible is designed for low-vision readers; that choice IS
+ * the design. Verdict treatments are fixed by docs/DESIGN.md — LIKELY_LEGIT
+ * is deliberately blue, never green.
+ */
+
+@theme {
+  --font-sans: 'Atkinson Hyperlegible', system-ui, sans-serif;
+  --font-display: 'Fraunces', Georgia, serif;
+
+  --color-paper: #faf6ee;
+  --color-paper-deep: #f1ead9;
+  --color-ink: #232838;
+  --color-ink-soft: #4d5468;
+  --color-shield: #2e4b77;
+  --color-shield-deep: #243b5e;
+  --color-gold: #b98a2d;
+  --color-line: #ddd3bd;
+
+  --color-scam: #b0271d;
+  --color-scam-ink: #ffffff;
+  --color-likely-scam: #f3b063;
+  --color-likely-scam-ink: #492a00;
+  --color-unclear: #f4d46a;
+  --color-unclear-ink: #443500;
+  --color-legit: #cfe0f4;
+  --color-legit-ink: #16365c;
+}
+
 html {
-  font-size: 18px;
-  line-height: 1.6;
+  background: var(--color-paper);
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: 19px;
+  line-height: 1.65;
+  color: var(--color-ink);
+  background:
+    radial-gradient(ellipse 90% 40% at 50% -5%, rgba(46, 75, 119, 0.07), transparent),
+    var(--color-paper);
+  min-height: 100dvh;
+}
+
+/* Visible 3px focus ring everywhere, per the accessibility table. */
+:focus-visible {
+  outline: 3px solid var(--color-shield);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
 }
+
+@keyframes kalasag-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.analysing-dot {
+  animation: kalasag-pulse 1.4s ease-in-out infinite;
+}
+
+.analysing-dot:nth-child(2) { animation-delay: 0.2s; }
+.analysing-dot:nth-child(3) { animation-delay: 0.4s; }
