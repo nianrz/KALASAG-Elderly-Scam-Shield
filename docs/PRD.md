@@ -1,6 +1,18 @@
-# PRD — Elderly Scam Shield
+# PRD — Kalasag
 
 **Status:** approved 2026-08-06 · **Deadline:** presentation in one week · **Owner:** Aki (Lead)
+
+## Name
+
+**Kalasag**, renamed from "Elderly Scam Shield" on 2026-08-06. Full form for titles and the deck: *Kalasag — Elderly Scam Shield*. In the product itself it is just **Kalasag**.
+
+*Kalasag* is the hardwood shield carried by pre-colonial and indigenous Filipino warriors, paired with the kampilan and the spear. Three reasons it fits better than a literal English descriptor:
+
+- **It is defensive, not adversarial.** A shield describes what the product does — absorb an incoming attack — without promising to defeat the attacker. That matches a product whose core invariant is that it never claims certainty.
+- **It appears on the seal of the Philippine National Police**, the agency the app routes users to through PNP-ACG. The name and the next step point at the same symbol.
+- **It is Filipino, for Filipino users**, in a product whose whole premise is that existing advice is English-only and generic.
+
+One caveat to state if asked: **Gawad KALASAG** is an existing national award for disaster-resilience work, run under the NDRRMC. Different domain and a different kind of thing, so confusion is unlikely, but we should be the ones to raise it rather than let a panelist find it. We are not affiliated with it and the deck should not imply otherwise.
 
 ## Problem
 

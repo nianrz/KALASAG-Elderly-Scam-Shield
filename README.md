@@ -1,6 +1,8 @@
-# Elderly Scam Shield
+# Kalasag — Elderly Scam Shield
 
 Paste a suspicious SMS, email, or URL and get a verdict, a plain-language explanation of the red flags, and concrete next steps — in Filipino/Taglish or English.
+
+*Kalasag* is the shield carried by pre-colonial Filipino warriors. It appears on the seal of the Philippine National Police — the agency this app tells users to report to.
 
 STSP001 capstone, AY2526-T3. A LangGraph pipeline over a curated Philippine scam knowledge base.
 

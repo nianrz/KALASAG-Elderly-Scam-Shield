@@ -1,8 +1,16 @@
-# Elderly Scam Shield
+# Kalasag — Elderly Scam Shield
 
 STSP001 capstone. A web app where an elderly Filipino or their caregiver pastes a suspicious SMS, email, or URL and gets **verdict → explanation → next steps** in plain Filipino/Taglish or English, produced by a LangGraph pipeline over a curated Philippine scam knowledge base.
 
 **Presentation is one week out.** Scope decisions favour a working local demo over polish. Do not add features that were not asked for.
+
+## The name
+
+**Renamed to Kalasag on 2026-08-06.** In the UI the product is just **Kalasag**; `Kalasag — Elderly Scam Shield` is the full form for doc titles and the deck.
+
+The rename is deliberately **surface-only**. `SHIELD_MODEL` and the other `SHIELD_*` env vars, `ShieldState`, and the `scam-shield-backend` package name are unchanged — a stale `.env` does not error, it silently falls back to defaults, and breaking every teammate's environment a week before the presentation buys nothing a reader can see.
+
+Docs dated before 2026-08-06 — the mentor consultation note, the canonical proposal, `docs/superpowers/**` — still say "Elderly Scam Shield". That is the record of what the project was called then, not a stale doc. Do not rewrite them.
 
 ## Docs
 

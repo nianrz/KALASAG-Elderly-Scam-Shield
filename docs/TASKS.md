@@ -1,4 +1,4 @@
-# Tasks — Elderly Scam Shield
+# Tasks — Kalasag
 
 Ordered by dependency, not by day. Build a thin vertical slice first (T1–T5), then replace stubs one node at a time. Something demoable exists from T5 onward.
 

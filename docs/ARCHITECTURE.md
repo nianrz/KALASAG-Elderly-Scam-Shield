@@ -1,4 +1,4 @@
-# Architecture — Elderly Scam Shield
+# Architecture — Kalasag
 
 Companion to `PRD.md`. Implements the mentor-confirmed shape from the 2026-07-29 consultation: three LLM agents behind a deterministic Python front end, with the guardrail inside the Detector rather than as its own node.
 
