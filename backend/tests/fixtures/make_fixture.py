@@ -13,88 +13,12 @@ from pathlib import Path
 
 FIXTURE_PATH = Path(__file__).resolve().parent / "kb_fixture.sqlite"
 
-SCHEMA = """
-CREATE TABLE sources (
-    source_id     TEXT PRIMARY KEY,
-    name          TEXT NOT NULL,
-    organisation  TEXT NOT NULL,
-    url           TEXT NOT NULL,
-    retrieved_at  TEXT NOT NULL,
-    licence       TEXT NOT NULL,
-    attribution   TEXT NOT NULL,
-    notes         TEXT
-);
-
-CREATE TABLE brand_rebuttals (
-    brand_id            TEXT PRIMARY KEY,
-    brand_name          TEXT NOT NULL,
-    rebuttal_quote      TEXT NOT NULL,
-    official_hotline    TEXT NOT NULL,
-    official_url        TEXT NOT NULL,
-    official_channels   TEXT,
-    measured_frequency  INTEGER,
-    source_id           TEXT NOT NULL REFERENCES sources(source_id)
-);
-
-CREATE TABLE lure_patterns (
-    pattern_id      TEXT PRIMARY KEY,
-    name            TEXT NOT NULL,
-    description     TEXT NOT NULL,
-    scam_type       TEXT NOT NULL,
-    measured_share  REAL,
-    measured_count  INTEGER,
-    red_flags       TEXT NOT NULL,
-    triggers_en     TEXT,
-    triggers_tl     TEXT,
-    source_id       TEXT NOT NULL REFERENCES sources(source_id)
-);
-
-CREATE TABLE reporting_contacts (
-    contact_id    TEXT PRIMARY KEY,
-    organisation  TEXT NOT NULL,
-    hotline       TEXT,
-    email         TEXT,
-    url           TEXT NOT NULL,
-    covers        TEXT NOT NULL,
-    priority      INTEGER NOT NULL,
-    source_id     TEXT NOT NULL REFERENCES sources(source_id)
-);
-
-CREATE TABLE advisories (
-    advisory_id   TEXT PRIMARY KEY,
-    title         TEXT NOT NULL,
-    body          TEXT NOT NULL,
-    published_at  TEXT,
-    language      TEXT NOT NULL,
-    source_id     TEXT NOT NULL REFERENCES sources(source_id)
-);
-
-CREATE TABLE message_examples (
-    message_id       TEXT PRIMARY KEY,
-    text             TEXT NOT NULL,
-    text_hash        TEXT NOT NULL UNIQUE,
-    label            TEXT NOT NULL,
-    source_category  TEXT,
-    scam_type        TEXT,
-    brand_tag        TEXT,
-    has_url          INTEGER NOT NULL,
-    taglish_markers  INTEGER,
-    retrievable      INTEGER NOT NULL,
-    eval_holdout     INTEGER NOT NULL DEFAULT 0,
-    source_id        TEXT NOT NULL REFERENCES sources(source_id)
-);
-
-CREATE TABLE kb_chunks (
-    chunk_id     TEXT PRIMARY KEY,
-    text         TEXT NOT NULL,
-    parent_type  TEXT NOT NULL,
-    parent_id    TEXT NOT NULL,
-    source_id    TEXT NOT NULL REFERENCES sources(source_id),
-    keywords_en  TEXT,
-    keywords_tl  TEXT,
-    embedding    BLOB
-);
-"""
+# The fixture executes Nian's committed DDL verbatim so its shape cannot
+# drift from the real KB's.
+SCHEMA_FILE = (
+    Path(__file__).resolve().parents[3]
+    / "knowledge-base" / "schema" / "001_schema.sqlite.sql"
+)
 
 SOURCES = [
     ("scottleechua-ph-sms", "PH Spam and Marketing SMS (with timestamps)", "Scott Lee Chua",
@@ -282,24 +206,21 @@ def _chunk_rows() -> list[tuple]:
 
 
 def build(path: Path = FIXTURE_PATH) -> Path:
-    import hashlib
-
     path.unlink(missing_ok=True)
     con = sqlite3.connect(path)
     try:
-        con.executescript(SCHEMA)
+        con.executescript(SCHEMA_FILE.read_text())
         con.executemany("INSERT INTO sources VALUES (?,?,?,?,?,?,?,?)", SOURCES)
         con.executemany("INSERT INTO brand_rebuttals VALUES (?,?,?,?,?,?,?,?)", BRAND_REBUTTALS)
         con.executemany("INSERT INTO lure_patterns VALUES (?,?,?,?,?,?,?,?,?,?)", LURE_PATTERNS)
         con.executemany("INSERT INTO reporting_contacts VALUES (?,?,?,?,?,?,?,?)", REPORTING_CONTACTS)
         con.executemany("INSERT INTO advisories VALUES (?,?,?,?,?,?)", ADVISORIES)
         con.executemany(
-            "INSERT INTO message_examples VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+            "INSERT INTO message_examples VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
             [
-                (mid, text,
-                 hashlib.sha256(" ".join(text.lower().split()).encode()).hexdigest(),
+                (mid, text, " ".join(text.lower().split()),
                  label, cat, scam_type, brand, has_url, markers, retrievable, 0,
-                 "scottleechua-ph-sms")
+                 None, "scottleechua-ph-sms")
                 for (mid, text, label, cat, scam_type, brand,
                      has_url, markers, retrievable) in MESSAGE_EXAMPLES
             ],

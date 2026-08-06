@@ -39,3 +39,4 @@ backend/models/
 *.safetensors
 *.bin
 backend/tests/fixtures/kb_fixture.sqlite
+backend/var/

@@ -13,7 +13,13 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BACKEND_ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_KB = BACKEND_ROOT / "tests" / "fixtures" / "kb_fixture.sqlite"
+REAL_KB = BACKEND_ROOT.parent / "knowledge-base" / "out" / "kb.sqlite"
 ENV_FILE = BACKEND_ROOT / ".env"
+
+
+def default_kb_path() -> Path:
+    """The real KB when built, else the fixture — per ARCHITECTURE § Retrieval."""
+    return REAL_KB if REAL_KB.exists() else FIXTURE_KB
 
 # Provider credentials share .env with the settings above, but the SDKs read
 # them from os.environ, which pydantic-settings does not populate. Existing env
@@ -35,7 +41,7 @@ class Settings(BaseSettings):
     max_tokens: int = Field(4096, alias="LLM_MAX_TOKENS")
     confidence_threshold: float = Field(0.70, alias="CONFIDENCE_THRESHOLD")
     retry_backoff: float = Field(20.0, alias="LLM_RETRY_BACKOFF")
-    kb_path: Path = Field(FIXTURE_KB, alias="KB_PATH")
+    kb_path: Path = Field(default_factory=default_kb_path, alias="KB_PATH")
 
 
 @lru_cache

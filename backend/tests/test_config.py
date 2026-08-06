@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from app.config import FIXTURE_KB, Settings, get_settings
+from app.config import FIXTURE_KB, REAL_KB, Settings, get_settings
 
 ENV_VARS = (
     "LLM_MODEL",
@@ -26,7 +26,8 @@ def test_defaults_when_nothing_is_set(no_shield_env):
     assert settings.max_tokens == 4096
     assert settings.confidence_threshold == 0.70
     assert settings.retry_backoff == 20.0
-    assert settings.kb_path == FIXTURE_KB
+    expected_kb = REAL_KB if REAL_KB.exists() else FIXTURE_KB
+    assert settings.kb_path == expected_kb
 
 
 def test_reads_every_shield_var(monkeypatch):
