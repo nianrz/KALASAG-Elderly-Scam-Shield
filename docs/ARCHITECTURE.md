@@ -191,11 +191,15 @@ def get_model():
     return init_chat_model(settings.model_id, max_tokens=settings.max_tokens)
 ```
 
-`SHIELD_MODEL` accepts `anthropic:claude-opus-5`, `anthropic:claude-sonnet-5`, `google_genai:gemini-...`, `bedrock_converse:...`.
+`SHIELD_MODEL` accepts `google_genai:gemini-2.5-flash` (default), `google_genai:gemini-2.5-pro`, and `bedrock_converse:...`.
 
-**Never pass `temperature`, `top_p`, `top_k`, or `budget_tokens`.** All four return HTTP 400 on Claude 5 models. LangChain forwards them without validating, so the failure surfaces at request time rather than at construction. Behaviour is steered by the prompt.
+**The project pays for no LLM API.** It runs on free tiers and the Accenture Bedrock sandbox. Gemini Flash is the default because the key is free, requires no card, and the sandbox model list remains unconfirmed — that is open question 2 in the PRD, and the abstraction is what stops it blocking anything. If Bedrock turns out to serve Claude (`anthropic.claude-*`), that costs us nothing and is a config string.
 
-Thinking is on by default on `claude-opus-5` and `max_tokens` bounds thinking plus response text together — leave headroom.
+**Never pass sampling parameters** — no `temperature`, `top_p`, or `top_k`. This is a portability rule rather than a per-model quirk: providers disagree about which are accepted, and some reject them outright, so a parameter that works under one `SHIELD_MODEL` and fails under another defeats the switch. Passing none works everywhere. Behaviour is steered by the prompt.
+
+**`max_tokens` may bound reasoning tokens as well as visible output** on models that reason before answering. Leave headroom or responses truncate mid-answer.
+
+`llm.py` also owns **retry with backoff on HTTP 429**. Free tiers rate-limit aggressively — Gemini's is on the order of 10–15 requests per minute, and a full eval run is roughly 200 calls, so the eval harness depends on this rather than implementing its own.
 
 ## Retrieval
 
@@ -235,7 +239,7 @@ The `embedding` column ships unpopulated. We populate it with our local model on
   ],
   "similar_scams": [{ "text": "...", "scam_type": "bank-impersonation" }],
   "kb_freshness": "2026-08-06",
-  "model_id": "anthropic:claude-opus-5"
+  "model_id": "google_genai:gemini-2.5-flash"
 }
 ```
 

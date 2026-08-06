@@ -83,15 +83,20 @@ Vitest is used rather than Jest because the frontend is Vite: it reads `vite.con
 The model is swappable by env var. All model access goes through `llm.py`; no other module imports a provider SDK.
 
 ```
-SHIELD_MODEL=anthropic:claude-opus-5     # default
-SHIELD_MODEL=anthropic:claude-sonnet-5   # cheaper, $2/$10 per MTok intro through 2026-08-31
-SHIELD_MODEL=google_genai:gemini-...     # free tier
-SHIELD_MODEL=bedrock_converse:...        # Accenture sandbox
+SHIELD_MODEL=google_genai:gemini-2.5-flash   # default — free tier
+SHIELD_MODEL=google_genai:gemini-2.5-pro     # free tier, stricter rate limit
+SHIELD_MODEL=bedrock_converse:...            # Accenture sandbox
 ```
 
-**Never pass `temperature`, `top_p`, `top_k`, or `budget_tokens` to a Claude 5 model.** All four return HTTP 400 on `claude-opus-5` and `claude-sonnet-5`. LangChain's `ChatAnthropic` accepts them without complaint and the failure only appears at request time. Steer behaviour with the prompt, not with sampling parameters.
+**This project pays for no LLM API.** We run on free tiers and the Accenture Bedrock sandbox. Do not add a paid provider key or a dependency that assumes one.
 
-Thinking is on by default on `claude-opus-5`. `max_tokens` caps thinking *plus* response text, so leave headroom or responses truncate mid-answer.
+Gemini Flash is the default because the key is free, needs no card, and the Bedrock sandbox model list is still unconfirmed (open question 2 in the PRD). Bedrock may itself serve Claude models under `anthropic.claude-*` IDs — that is AWS billing on the sandbox, not a key we buy, and it is fine.
+
+**Never pass sampling parameters — no `temperature`, `top_p`, `top_k`.** Behaviour is steered by the prompt. This is a provider-portability rule, not a per-model quirk: what each provider accepts differs, some reject these outright, and a parameter that works on one `SHIELD_MODEL` and 400s on another defeats the whole point of the switch. Passing none of them works everywhere.
+
+**`max_tokens` may bound reasoning as well as visible output**, depending on the model. Leave headroom or responses truncate mid-answer.
+
+**Free tiers rate-limit hard.** A full eval run is roughly 200 calls; Gemini's free tier is on the order of 10–15 requests per minute. `llm.py` owns retry-with-backoff on 429 — no caller should implement its own.
 
 **Embeddings are not the chat provider.** Retrieval uses a local `sentence-transformers` model with a fixed 384 dimension. Switching `SHIELD_MODEL` must never require re-embedding the KB.
 

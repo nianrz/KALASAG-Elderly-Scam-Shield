@@ -10,10 +10,19 @@ Owner tags follow the directory ownership map in `CLAUDE.md`.
 
 ## Vertical slice
 
-### T1 — Backend scaffold and provider switch · Aki
-Create `backend/` with `uv`, FastAPI, LangGraph, and `app/llm.py` wrapping `init_chat_model(settings.model_id)`. `config.py` reads `SHIELD_MODEL`, `SHIELD_MAX_TOKENS`, `SHIELD_CONFIDENCE_THRESHOLD`, `SHIELD_KB_PATH` from env.
+### T0 — Confirm what we can actually call · Aki
+Get a free Gemini key from `aistudio.google.com/apikey`, and find out which models the Accenture Bedrock sandbox exposes.
 
-Do not pass `temperature`, `top_p`, `top_k`, or `budget_tokens` — all four 400 on Claude 5.
+This gates the bake-off (T19) and nothing else — the provider abstraction means the build proceeds on Gemini regardless. Do it early anyway; "which models does the sandbox have" has been open since 2026-07-29.
+
+**Verify:** a Gemini key in `.env` returns a completion; the Bedrock model list is written down, or recorded as still unanswered with who was asked.
+
+### T1 — Backend scaffold and provider switch · Aki
+Create `backend/` with `uv`, FastAPI, LangGraph, and `app/llm.py` wrapping `init_chat_model(settings.model_id)`. `config.py` reads `SHIELD_MODEL`, `SHIELD_MAX_TOKENS`, `SHIELD_CONFIDENCE_THRESHOLD`, `SHIELD_RETRY_BACKOFF`, `SHIELD_KB_PATH` from env.
+
+Pass no sampling parameters — providers disagree about which they accept, and any of them breaks the switch.
+
+`llm.py` owns retry-with-backoff on 429. Free tiers rate-limit at roughly 10–15 requests per minute and an eval run is ~200 calls, so this is load-bearing, not defensive.
 
 **Verify:** a one-line script calls the model and prints a response, on two different `SHIELD_MODEL` values, with no code change.
 
@@ -141,9 +150,13 @@ State plainly on the deck that the threshold is calibrated on the same set the a
 **Verify:** the chosen value is in config and its rationale is written down.
 
 ### T19 — Model bake-off · Aki
-Run T17 under two `SHIELD_MODEL` values. Compare accuracy, latency, cost, and Tagalog register.
+Run T17 under two or more `SHIELD_MODEL` values. Compare accuracy, latency, and Tagalog register.
 
-**Verify:** side-by-side table; a native speaker ranks the Tagalog output on both.
+Candidates are whatever we can actually access for free: `google_genai:gemini-2.5-flash`, `google_genai:gemini-2.5-pro`, and whatever the Bedrock sandbox exposes once T0 answers that. Access is the binding constraint, which is exactly the mentor's framing — this table is our answer to "how did you choose your model."
+
+Cost is not a comparison axis; every candidate is free to us. Say so rather than leaving an empty column.
+
+**Verify:** side-by-side table; a native speaker ranks the Tagalog output on each.
 
 ### T20 — Integrate the real KB · Nian → Aki
 Nian delivers `knowledge-base/`. Point `SHIELD_KB_PATH` at `knowledge-base/out/kb.sqlite`, embed its chunks, re-run T17.

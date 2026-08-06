@@ -115,16 +115,25 @@ The stubbed E2E suite needs no provider key and no network. Only `e2e:smoke` doe
 
 ## Configuration
 
-`backend/.env`:
+`backend/.env` — copy from `backend/.env.example`:
 
 | Variable | Default | |
 |---|---|---|
-| `SHIELD_MODEL` | `anthropic:claude-opus-5` | Any `init_chat_model` string — `anthropic:`, `google_genai:`, `bedrock_converse:` |
-| `SHIELD_MAX_TOKENS` | `4096` | Bounds thinking plus response together on Claude 5 |
+| `SHIELD_MODEL` | `google_genai:gemini-2.5-flash` | Any `init_chat_model` string — `google_genai:` or `bedrock_converse:` |
+| `SHIELD_MAX_TOKENS` | `4096` | May bound reasoning as well as visible output |
 | `SHIELD_CONFIDENCE_THRESHOLD` | `0.70` | Set from the eval sweep, not asserted |
+| `SHIELD_RETRY_BACKOFF` | `20` | Seconds to wait after a 429 |
 | `SHIELD_KB_PATH` | fixture | Point at `knowledge-base/out/kb.sqlite` once it lands |
 
-Plus whichever provider key matches `SHIELD_MODEL` — `ANTHROPIC_API_KEY`, `GOOGLE_API_KEY`, or AWS credentials.
+### Getting a key — we pay for nothing
+
+**Gemini free tier (default).** Get a key at [aistudio.google.com/apikey](https://aistudio.google.com/apikey). Free, no card, takes a minute. Set `GOOGLE_API_KEY`.
+
+**AWS Bedrock (Accenture sandbox).** Set `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN`, and `AWS_REGION`, then point `SHIELD_MODEL` at a `bedrock_converse:` model ID. Which models the sandbox exposes is still unconfirmed — that's open question 2 in the PRD, and the provider switch is what stops it blocking anything.
+
+> A Claude Pro/Max subscription does **not** cover API calls — that's claude.ai and Claude Code only. We deliberately depend on no paid API key.
+
+Free tiers rate-limit hard: Gemini's is roughly 10–15 requests per minute, and a full eval run is about 200 calls. `llm.py` retries with backoff, so an eval run takes minutes rather than failing.
 
 Switching providers requires no code change and no re-embedding: embeddings are local and provider-independent by design.
 
@@ -171,7 +180,9 @@ Read `CLAUDE.md` first — conventions, ownership, and the pipeline invariants t
 
 **Cypress specs fail with "element not found".** Expected until the UI is built — the specs encode the `DESIGN.md` contract and are the acceptance criteria for tasks T5 and T14. See `qa/TEST-PLAN.md § Known gaps`.
 
-**400 from Anthropic mentioning `temperature`.** Something passed a sampling parameter. `temperature`, `top_p`, `top_k`, and `budget_tokens` are all rejected on Claude 5 models. Only `backend/app/llm.py` should construct the model.
+**400 mentioning `temperature` or `top_p`.** Something passed a sampling parameter. We pass none — providers disagree about which they accept, so any of them breaks the `SHIELD_MODEL` switch. Only `backend/app/llm.py` should construct the model.
+
+**429 / rate limited.** Expected on a free tier. `llm.py` backs off and retries; raise `SHIELD_RETRY_BACKOFF` if an eval run keeps tripping it.
 
 ---
 

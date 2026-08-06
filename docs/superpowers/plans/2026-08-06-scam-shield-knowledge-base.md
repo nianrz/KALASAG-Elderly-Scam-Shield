@@ -260,22 +260,33 @@ def is_held_out(candidate: str, eval_norms: list[str]) -> bool:
 knowledge-base/.venv/bin/python -m pytest knowledge-base/tests/test_normalise.py -v
 ```
 
-Expected: 7 passed.
+Expected: 8 passed.
 
 - [ ] **Step 7: Verify against the real data**
 
 This is the measurement the spec's numbers came from. It must reproduce.
 
+**Read both CSVs through a file handle opened with `newline=""`.** Messages in this corpus contain embedded newlines inside quoted fields. Reading via `urlopen(...).read().decode().splitlines()` splits those fields apart and silently loses 14 held-out rows, yielding 123 instead of 140. Every CSV read in this project uses a file handle for that reason.
+
 ```bash
 knowledge-base/.venv/bin/python - <<'PY'
 import csv, sys, urllib.request
+from pathlib import Path
 sys.path.insert(0, "knowledge-base")
 from kb.normalise import holdout_index, is_held_out
 
-URL = "https://raw.githubusercontent.com/scottleechua/data/main/spam-and-marketing-sms/text-messages.csv"
-raw = urllib.request.urlopen(URL, timeout=60).read().decode("utf-8")
-rows = [r for r in csv.DictReader(raw.splitlines()) if "<REDACTED>" not in r["text"]]
-evals = list(csv.DictReader(open("eval-set-candidate-55.csv", encoding="utf-8")))
+URL = ("https://raw.githubusercontent.com/scottleechua/data/main/"
+       "spam-and-marketing-sms/text-messages.csv")
+cache = Path("knowledge-base/out/text-messages.csv")
+cache.parent.mkdir(parents=True, exist_ok=True)
+if not cache.exists():
+    with urllib.request.urlopen(URL, timeout=120) as response:
+        cache.write_bytes(response.read())
+
+with open(cache, encoding="utf-8", newline="") as handle:
+    rows = [r for r in csv.DictReader(handle) if "<REDACTED>" not in r["text"]]
+with open("eval-set-candidate-55.csv", encoding="utf-8", newline="") as handle:
+    evals = list(csv.DictReader(handle))
 
 idx = holdout_index(e["text"] for e in evals)
 matched = sum(1 for e in evals if is_held_out(e["text"], idx))

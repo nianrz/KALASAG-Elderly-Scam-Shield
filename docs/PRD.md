@@ -72,6 +72,7 @@ The `English | Tagalog` toggle exists because these two users want different out
 | N4 | Switching LLM provider is an env-var change and requires no re-embedding. |
 | N5 | The app runs offline apart from the LLM API call. |
 | N6 | The E2E suite runs without a provider key or network access. Only the smoke spec needs either. |
+| N7 | The project incurs no LLM API cost. It runs on free tiers and the Accenture Bedrock sandbox. |
 
 ### Verdicts
 
@@ -111,7 +112,7 @@ Stated on the deck, not hidden.
 | # | Question | Status |
 |---|---|---|
 | 1 | Is a deployed demo required by the course? | Course-side, unresolved. We demo locally. |
-| 2 | Which models does the Accenture Bedrock sandbox expose? | Unconfirmed. Provider abstraction makes this non-blocking. |
+| 2 | Which models does the Accenture Bedrock sandbox expose? | Unconfirmed. Provider abstraction makes this non-blocking — we default to the Gemini free tier until it is answered. |
 | 3 | Does screenshot/OCR input ship in a later term? | Deferred deliberately. |
 
 ## Future work

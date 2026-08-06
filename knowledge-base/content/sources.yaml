@@ -1,0 +1,150 @@
+# Provenance semantics
+# retrieved_at means "the date the content backing this source was
+# obtained" — this can be a web-page fetch, a dataset download, or (when
+# noted explicitly on the source) corpus evidence standing in for a page
+# that could not be fetched. It does not, by itself, promise a scraped
+# advisories/<source_id>.md file exists.
+# fetch_log.json is narrower: it records web-fetch attempts and outcomes
+# for advisory page sources specifically (ok / ok-browser / empty / failed).
+# When a source's retrieved_at is not backed by an "ok"/"ok-browser" entry
+# in fetch_log.json, its notes field explains the non-web-fetch provenance.
+- source_id: scottleechua-ph-sms
+  name: PH Spam and Marketing SMS (with timestamps)
+  organisation: Scott Lee Chua
+  url: https://github.com/scottleechua/data/tree/main/spam-and-marketing-sms
+  retrieved_at: '2026-08-06'
+  licence: CC BY 4.0
+  attribution: Chua, Scott Lee. "Spam and marketing SMS with timestamps." Available at https://github.com/scottleechua/data.
+    Licensed under CC BY 4.0.
+  notes: >-
+    retrieved_at is the CSV dataset download date (kb.dataset.fetch_dataset
+    pulling text-messages.csv), not a web-page fetch — this source is not
+    tracked in fetch_log.json, which covers advisory page fetches only.
+    8,255 messages; 1,907 with usable text after the author's privacy
+    redaction. OTP and notifs are effectively fully redacted.
+- source_id: bsp-consumer-advisories
+  name: BSP consumer advisories
+  organisation: Bangko Sentral ng Pilipinas
+  url: https://www.bsp.gov.ph/SitePages/MediaAndResearch/MediaDisp.aspx?ItemId=6533
+  retrieved_at: ''
+  licence: public advisory
+  attribution: Bangko Sentral ng Pilipinas consumer advisories.
+  notes: >-
+    URL corrected 2026-08-06: the registered root https://www.bsp.gov.ph/
+    yields only a client-rendered shell and the previously-registered
+    SitePages/InformationandAdvisories/Advisories.aspx path 404s. This
+    ItemId=6533 "Press Releases and Advisories" page was confirmed live via
+    WebSearch but now 404s directly. A browser retry (2026-08-06) found the
+    root currently serving a genuine "Website is undergoing maintenance"
+    notice directing visitors to BSP's Facebook/X accounts instead — real
+    text, but no advisory content, so retrieved_at stays blank and this
+    source remains omitted. See fetch_log.json for both attempts.
+- source_id: pnp-acg-advisories
+  name: PNP Anti-Cybercrime Group advisories
+  organisation: Philippine National Police
+  url: https://acg.pnp.gov.ph/category/cs-scams/
+  retrieved_at: '2026-08-06'
+  licence: public advisory
+  attribution: PNP Anti-Cybercrime Group public advisories.
+  notes: >-
+    URL corrected 2026-08-06: the registered root 403'd to script and, in
+    a browser, serves only a Cloudflare interstitial followed by thin news
+    carousels. Captured instead via the browser from the "Types of
+    Cybercrime Scams" category page, which lists 12 named scam types with
+    short descriptions (status ok-browser in fetch_log.json).
+- source_id: npc-advisories
+  name: NPC privacy advisories
+  organisation: National Privacy Commission
+  url: https://privacy.gov.ph/
+  retrieved_at: '2026-08-06'
+  licence: public advisory
+  attribution: National Privacy Commission advisories.
+  notes: ''
+- source_id: cybersecurity-ph-reporting
+  name: Cybercrime reporting guide
+  organisation: cybersecurity.ph
+  url: https://www.cybersecurity.ph/cybercrime-reporting/
+  retrieved_at: '2026-08-06'
+  licence: public guidance
+  attribution: cybersecurity.ph cybercrime reporting guide.
+  notes: Primary source for the I-ARC 1326 hotline.
+- source_id: scamwatch-pilipinas
+  name: ScamWatch Pilipinas
+  organisation: ScamWatch Pilipinas
+  url: https://scamwatchpilipinas.com/
+  retrieved_at: '2026-08-06'
+  licence: public advisory
+  attribution: ScamWatch Pilipinas.
+  notes: NGO source; best for fresh patterns.
+- source_id: ntc-public-advisory
+  name: NTC public scam advisory
+  organisation: National Telecommunications Commission
+  url: https://ntc.gov.ph/
+  retrieved_at: '2026-08-06'
+  licence: public advisory
+  attribution: National Telecommunications Commission public advisories.
+  notes: >-
+    Updated 2026-08-06: a browser retry succeeded where the scripted fetch
+    (HTTP 403) did not — https://ntc.gov.ph/ served a Cloudflare interstitial
+    that resolved after ~12s, then a "Notice to the Public" advisory modal
+    with a dated Public Advisory (14/16 July 2026, NTC-EDGE System data
+    disclosure) plus phishing/OTP vigilance guidance; status ok-browser in
+    fetch_log.json, and advisories/ntc-public-advisory.md now exists.
+    Separately, retrieved_at is also independently supported by corpus
+    evidence: hotline 1682 is quoted verbatim in NTC public-service messages
+    present in the corpus (gov-category messages, scottleechua-ph-sms
+    source). Both provenance paths point to the same date.
+- source_id: gcash-fraud-advisory
+  name: GCash security advisories
+  organisation: GCash (Mynt)
+  url: https://help.gcash.com/hc/en-us/articles/19578518834457-How-can-I-protect-my-GCash-account
+  retrieved_at: '2026-08-06'
+  licence: brand advisory
+  attribution: GCash official security guidance.
+  notes: >-
+    URL corrected 2026-08-06: the registered root https://www.gcash.com/ is
+    nav/marketing boilerplate only (confirmed by script and by browser; the
+    file scraped from it was deleted, see fetch_log.json). Captured via
+    browser from the official GCash Help Center article "How can I protect
+    my GCash account?", which carries the real "GCash will NEVER ask for
+    your MPIN/OTP" advisory content (status ok-browser).
+- source_id: unionbank-fraud-advisory
+  name: UnionBank fraud advisories
+  organisation: UnionBank of the Philippines
+  url: https://www.unionbankph.com/privacy-security?report=4
+  retrieved_at: '2026-08-06'
+  licence: brand advisory
+  attribution: UnionBank of the Philippines official fraud guidance.
+  notes: >-
+    URL corrected 2026-08-06: the registered root 403'd to script. Captured
+    via browser from the "Safe Surfing Guidelines" tab under Privacy -
+    Security (the ?report=4 query selects that tab client-side), which
+    carries the real Anti-Fraud & Anti-Phishing Guidelines content (status
+    ok-browser).
+- source_id: bdo-fraud-advisory
+  name: BDO security advisories
+  organisation: BDO Unibank
+  url: https://www.bdo.com.ph/about-bdo/learn/stop-scam
+  retrieved_at: '2026-08-06'
+  licence: brand advisory
+  attribution: BDO Unibank official security guidance.
+  notes: >-
+    The entire bdo.com.ph domain was refused by the claude-in-chrome
+    extension's safety restrictions this session (root and
+    /personal/digitalbanking/account-security both blocked; 2 attempts).
+    Nian supplied a first-hand screenshot of the live #BDOStopScam page
+    (breadcrumb: About BDO / Learn / BDO StopScam), which was transcribed
+    verbatim into advisories/bdo-fraud-advisory.md. The URL above is a
+    best-effort reconstruction from the breadcrumb and a matching sibling
+    URL found via WebSearch, not a confirmed exact match — the screenshot
+    did not show the address bar. Status ok-browser in fetch_log.json, with
+    a note flagging the screenshot-transcription method distinctly from the
+    other ok-browser entries (those used get_page_text directly).
+- source_id: maya-fraud-advisory
+  name: Maya security advisories
+  organisation: Maya Philippines
+  url: https://www.maya.ph/help
+  retrieved_at: '2026-08-06'
+  licence: brand advisory
+  attribution: Maya Philippines official security guidance.
+  notes: ''
