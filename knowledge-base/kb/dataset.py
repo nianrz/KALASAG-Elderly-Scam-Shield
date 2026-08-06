@@ -12,8 +12,9 @@ silently accepted.
 from __future__ import annotations
 
 import csv
-import urllib.request
 from pathlib import Path
+
+import requests
 
 DATASET_URL = (
     "https://raw.githubusercontent.com/scottleechua/data/main/"
@@ -34,12 +35,19 @@ EXPECTED_COUNTS = {
 
 
 def fetch_dataset(cache_path: Path) -> Path:
-    """Download the corpus unless it is already cached. Never re-downloads."""
+    """Download the corpus unless it is already cached. Never re-downloads.
+
+    Uses requests rather than urllib.request: urllib trusts the OS trust store,
+    which the python.org macOS framework build does not populate, so a clean
+    rebuild there died with CERTIFICATE_VERIFY_FAILED. requests is already a
+    dependency and ships its own CA bundle, so this works the same everywhere.
+    """
     cache_path.parent.mkdir(parents=True, exist_ok=True)
     if cache_path.exists() and cache_path.stat().st_size > 0:
         return cache_path
-    with urllib.request.urlopen(DATASET_URL, timeout=120) as response:
-        cache_path.write_bytes(response.read())
+    response = requests.get(DATASET_URL, timeout=120)
+    response.raise_for_status()
+    cache_path.write_bytes(response.content)
     return cache_path
 
 

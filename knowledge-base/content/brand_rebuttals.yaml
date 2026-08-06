@@ -1,0 +1,55 @@
+# Verbatim brand rebuttals for the impersonated brands measured in the corpus.
+#
+# Every rebuttal_quote, official_hotline, and official_channels value below is
+# copied verbatim from a page that was actually fetched on 2026-08-06 (see
+# content/fetch_log.json). Nothing here is written from memory. A brand whose
+# own statement could not be found on a fetched page gets no row.
+#
+# measured_frequency is the count of SCAM-labelled messages carrying this
+# brand_tag in the built database — i.e. it reconciles with
+#   SELECT brand_tag, COUNT(*) FROM message_examples
+#   WHERE label = 'SCAM' GROUP BY brand_tag;
+# after the Task 9 normalise-and-dedupe pass (727 SCAM rows of the 827 spam
+# messages). These are computed counts from kb.tagging.detect_brand, not the
+# 2026-07-29 hand-analysis figures (GCash 39 / UnionBank 29 / BDO 24 / Maya 9),
+# whose keyword lists were never recorded. See the kb/tagging.py docstring:
+# report computed counts, do not tune the lists to reproduce old numbers.
+#
+# BPI (1) and Metrobank (0) are deliberately excluded despite the June scope
+# naming them — the corpus does not support a rebuttal entry for either.
+
+- brand_id: gcash
+  brand_name: GCash
+  rebuttal_quote: "GCash will NEVER send you links via SMS/email or ask for your MPIN/OTP."
+  official_hotline: "2882 (Globe/TM) / (02) 7213-9999 (other networks; fees may apply)"
+  official_url: https://help.gcash.com/hc/en-us/articles/19578518834457-How-can-I-protect-my-GCash-account
+  official_channels: "Only refer to our Official GCash pages with a blue check mark and our Help Center through the app or help.gcash.com."
+  measured_frequency: 34
+  source_id: gcash-fraud-advisory
+
+- brand_id: bdo
+  brand_name: BDO Unibank
+  rebuttal_quote: "Don't click links! BDO messages will not contain links, and sender IDs can be spoofed. Watch out for fake texts!"
+  official_hotline: "(+632) 8888-0000"
+  official_url: https://www.bdo.com.ph/about-bdo/learn/stop-scam
+  official_channels: "For scams, fraud, or lost/stolen cards, call the BDO Customer Contact Center at (02) 8888-0000. To report phishing attempts, email reportphish@bdo.com.ph."
+  measured_frequency: 30
+  source_id: bdo-fraud-advisory
+
+- brand_id: unionbank
+  brand_name: UnionBank of the Philippines
+  rebuttal_quote: "Ignore any messages purportedly from UnionBank requesting you to update any confidential information relating to your accounts at UnionBank."
+  official_hotline: "24-Hour Customer Service at Metro Manila (+632) 8841-8600, PLDT domestic toll free 1-800-1888-2277, International toll-free (IAC) + 800-8277-2273"
+  official_url: https://www.unionbankph.com/privacy-security?report=4
+  official_channels: "Do not click on any links provided by an email message purportedly coming from UnionBank. Only transact on-line by logging in directly at http://www.unionbankph.com"
+  measured_frequency: 27
+  source_id: unionbank-fraud-advisory
+
+- brand_id: maya
+  brand_name: Maya
+  rebuttal_quote: "Never share your password, OTP, card number, or card CVV with anyone, even our representatives."
+  official_hotline: "Maya Customer Hotline: (+632) 8845-7788 / Domestic Toll-Free: 1-800-1084-57788"
+  official_url: https://www.maya.ph/help
+  official_channels: "For 24/7 assistance, visit the Help Center. How to visit the Help Center: 1 Log in to Maya, 2 Go to your Profile, 3 Tap 'Get help'."
+  measured_frequency: 6
+  source_id: maya-fraud-advisory
