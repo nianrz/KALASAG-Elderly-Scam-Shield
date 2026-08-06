@@ -39,7 +39,9 @@ Two rules on top of the map:
 
 ## Directory ownership
 
-Work in your own directory. Branch as `branch/<name>`, merge to `main` daily.
+Work in your own directory. Merge to `main` daily.
+
+Branch as `<type>/<what-changed>` — `feat/provider-switch`, `fix/redaction-otp`, `docs/test-plan`. Same type prefixes as the commit convention below. **No owner names and no task numbers in branch names**: the branch says what the change is, and the owner is already in `git log` and the table above.
 
 | Path | Owner |
 |---|---|
