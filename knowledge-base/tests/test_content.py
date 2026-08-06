@@ -16,7 +16,10 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def test_sources_load_with_required_fields():
     sources = load_sources(ROOT)
-    assert len(sources) >= 11
+    # Was >= 11 until bsp-consumer-advisories was removed on 2026-08-06: BSP's
+    # site served only a maintenance notice on every fetch, so the source never
+    # had a retrieval date and the verify_kb.py provenance gate rejected it.
+    assert len(sources) >= 10
     ids = {s["source_id"] for s in sources}
     assert "scottleechua-ph-sms" in ids
     assert "i-arc" not in ids  # contacts are not sources

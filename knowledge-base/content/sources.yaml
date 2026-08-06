@@ -22,23 +22,15 @@
     tracked in fetch_log.json, which covers advisory page fetches only.
     8,255 messages; 1,907 with usable text after the author's privacy
     redaction. OTP and notifs are effectively fully redacted.
-- source_id: bsp-consumer-advisories
-  name: BSP consumer advisories
-  organisation: Bangko Sentral ng Pilipinas
-  url: https://www.bsp.gov.ph/SitePages/MediaAndResearch/MediaDisp.aspx?ItemId=6533
-  retrieved_at: ''
-  licence: public advisory
-  attribution: Bangko Sentral ng Pilipinas consumer advisories.
-  notes: >-
-    URL corrected 2026-08-06: the registered root https://www.bsp.gov.ph/
-    yields only a client-rendered shell and the previously-registered
-    SitePages/InformationandAdvisories/Advisories.aspx path 404s. This
-    ItemId=6533 "Press Releases and Advisories" page was confirmed live via
-    WebSearch but now 404s directly. A browser retry (2026-08-06) found the
-    root currently serving a genuine "Website is undergoing maintenance"
-    notice directing visitors to BSP's Facebook/X accounts instead — real
-    text, but no advisory content, so retrieved_at stays blank and this
-    source remains omitted. See fetch_log.json for both attempts.
+# bsp-consumer-advisories was removed on 2026-08-06 (Task 10). Every fetch
+# of bsp.gov.ph — script, browser, and a third round of attempts against
+# ItemId=6533, /SitePages/Contact Us/ContactUs.aspx and the Financial
+# Consumer Protection page — returned either a genuine "Website is undergoing
+# maintenance" notice or a 404. The source therefore never had a retrieval
+# date, and the one row it backed (the BSP consumer-assistance contact) has
+# been dropped with it rather than serve an unverifiable hotline. The full
+# attempt history stays in content/fetch_log.json. Re-register this source
+# when BSP's site returns.
 - source_id: pnp-acg-advisories
   name: PNP Anti-Cybercrime Group advisories
   organisation: Philippine National Police
@@ -108,6 +100,17 @@
     browser from the official GCash Help Center article "How can I protect
     my GCash account?", which carries the real "GCash will NEVER ask for
     your MPIN/OTP" advisory content (status ok-browser).
+    Hotline provenance (2026-08-06, Task 6): that Help Center article carries
+    the rebuttal statement but no hotline, and
+    help.gcash.com/hc/en-us/p/contact-us is Cloudflare-403 to both script and
+    WebFetch (the browser extension was not connected this round). The
+    official_hotline in brand_rebuttals.yaml — "2882 (Globe/TM) / (02)
+    7213-9999 (other networks; fees may apply)" — was therefore taken
+    verbatim from the footer of the registered root https://www.gcash.com/,
+    re-fetched by script the same day (HTTP 200; boilerplate for advisory
+    purposes, but the footer hotline is first-party and current). The GCash
+    rebuttal row thus draws its quote and its hotline from two different
+    fetched GCash pages; official_url records the quote's page.
 - source_id: unionbank-fraud-advisory
   name: UnionBank fraud advisories
   organisation: UnionBank of the Philippines

@@ -18,14 +18,14 @@
   priority: 2
   source_id: pnp-acg-advisories
 
-- contact_id: bsp-consumer
-  organisation: Bangko Sentral ng Pilipinas — Consumer Assistance
-  hotline: "(+632) 8811-1277"
-  email: consumeraffairs@bsp.gov.ph
-  url: https://www.bsp.gov.ph/
-  covers: Complaints about banks and BSP-supervised financial institutions.
-  priority: 3
-  source_id: bsp-consumer-advisories
+# A BSP consumer-assistance contact was dropped on 2026-08-06 (Task 10).
+# It carried hotline "(+632) 8811-1277" and consumeraffairs@bsp.gov.ph, but
+# bsp.gov.ph has been serving a genuine "Website is undergoing maintenance"
+# notice every time it was fetched, so neither detail could be sourced from
+# BSP itself — it would have been a phone number handed to an elderly user on
+# no authority but memory. The verify_kb.py provenance gate caught it. See
+# content/fetch_log.json for the fetch attempts. Restore this entry when BSP's
+# site is back and the number can be read off their own page.
 
 - contact_id: npc
   organisation: National Privacy Commission
