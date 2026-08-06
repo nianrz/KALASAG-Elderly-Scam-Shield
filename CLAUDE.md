@@ -39,7 +39,9 @@ Two rules on top of the map:
 
 ## Directory ownership
 
-Work in your own directory. Branch as `branch/<name>`, merge to `main` daily.
+Work in your own directory. Merge to `main` daily.
+
+Branch as `<type>/<what-changed>` — `feat/provider-switch`, `fix/redaction-otp`, `docs/test-plan`. Same type prefixes as the commit convention below. **No owner names and no task numbers in branch names**: the branch says what the change is, and the owner is already in `git log` and the table above.
 
 | Path | Owner |
 |---|---|
@@ -84,7 +86,8 @@ The model is swappable by env var. All model access goes through `llm.py`; no ot
 
 ```
 SHIELD_MODEL=google_genai:gemini-2.5-flash   # default — free tier
-SHIELD_MODEL=google_genai:gemini-2.5-pro     # free tier, stricter rate limit
+SHIELD_MODEL=google_genai:gemini-2.5-flash-lite  # free tier, cheapest quota
+SHIELD_MODEL=google_genai:gemini-2.5-pro     # NOT on the free tier — quota is 0
 SHIELD_MODEL=bedrock_converse:...            # Accenture sandbox
 ```
 

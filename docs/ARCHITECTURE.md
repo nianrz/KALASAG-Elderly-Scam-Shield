@@ -67,7 +67,8 @@ backend/
     prompts/          retrieve.md · detect.md · reflect.md · advise.md
   tests/
     fixtures/kb_fixture.sqlite  + make_fixture.py
-    test_preprocess.py test_retrieval.py test_graph.py test_api.py
+    test_config.py test_llm.py test_preprocess.py
+    test_retrieval.py test_graph.py test_api.py
   eval/
     run_eval.py       55-message eval + threshold sweep
     results/
@@ -187,11 +188,21 @@ Contacts are passed through verbatim and the prompt states they must be reproduc
 ```python
 from langchain.chat_models import init_chat_model
 
-def get_model():
+from app.config import get_settings
+
+def get_model() -> BaseChatModel:
+    settings = get_settings()
     return init_chat_model(settings.model_id, max_tokens=settings.max_tokens)
+
+def invoke_with_retry(runnable: Runnable, payload: Any) -> Any:
+    ...  # 429 backoff; build the chain first, wrap last
 ```
 
-`SHIELD_MODEL` accepts `google_genai:gemini-2.5-flash` (default), `google_genai:gemini-2.5-pro`, and `bedrock_converse:...`.
+Settings are reached through `get_settings()` rather than a module-level `settings` object. The `lru_cache` on it means one read per process, and `cache_clear()` lets a test set `SHIELD_*` and see the change — a module-level instance would freeze whatever env existed at first import.
+
+`SHIELD_MODEL` accepts any `init_chat_model` string. Verified live on `google_genai:gemini-2.5-flash` (default) and `google_genai:gemini-2.5-flash-lite`; `bedrock_converse:...` is untested until T0 answers what the sandbox exposes.
+
+**`google_genai:gemini-2.5-pro` is not available to us.** T1 (2026-08-06) called it and got `429 RESOURCE_EXHAUSTED` with `limit: 0` on both `GenerateRequestsPerDayPerProjectPerModel-FreeTier` and the per-minute token quota. That is not a stricter rate limit that waiting clears — the free tier grants no Pro quota at all. Earlier docs listed it as a bake-off candidate; it is not one unless someone attaches billing, which the project does not do.
 
 **The project pays for no LLM API.** It runs on free tiers and the Accenture Bedrock sandbox. Gemini Flash is the default because the key is free, requires no card, and the sandbox model list remains unconfirmed — that is open question 2 in the PRD, and the abstraction is what stops it blocking anything. If Bedrock turns out to serve Claude (`anthropic.claude-*`), that costs us nothing and is a config string.
 
@@ -200,6 +211,12 @@ def get_model():
 **`max_tokens` may bound reasoning tokens as well as visible output** on models that reason before answering. Leave headroom or responses truncate mid-answer.
 
 `llm.py` also owns **retry with backoff on HTTP 429**. Free tiers rate-limit aggressively — Gemini's is on the order of 10–15 requests per minute, and a full eval run is roughly 200 calls, so the eval harness depends on this rather than implementing its own.
+
+Retry is exposed as `invoke_with_retry(runnable, payload)` rather than folded into `get_model()`. LangChain's `Runnable.with_retry()` returns a plain `Runnable`, which no longer offers `with_structured_output()` — the Detector needs that, so retry has to be applied *after* the chain is built, not to the bare model. It also only accepts exception *types*, and each provider raises its own for a 429; `is_rate_limit()` matches on the wire status and wording instead, so nothing here imports a provider's exception classes. Backoff escalates as `SHIELD_RETRY_BACKOFF × attempt` over `MAX_ATTEMPTS = 4`. Non-429 failures raise immediately — retrying a malformed prompt just burns two minutes and the same quota.
+
+Two refinements are deliberately **not** implemented. The loop ignores the provider's own `retryDelay` hint (Gemini asked for 24.9s against our 20s first backoff), and it cannot tell a per-minute 429 from an exhausted daily quota, so a hard `limit: 0` burns all four attempts before raising — which is what the Pro call in T1 did. Both cost only wall-clock time, and both only bite on Gemini's free tier; the plan is to run the eval on the Bedrock sandbox, where quota is expected to be the non-issue. If T0 comes back saying the sandbox is unusable or also tightly limited, revisit this before T17 — a 200-call eval run is where the wasted minutes would actually add up.
+
+`config.py` calls `load_dotenv(.env, override=False)` at import. pydantic-settings reads the `SHIELD_*` values into `Settings` but does not put anything in `os.environ`, and the provider SDKs read `GOOGLE_API_KEY` / `AWS_*` from there — without this, a `.env` with a valid key still fails to authenticate. `override=False` keeps an already-exported variable winning over the file.
 
 ## Retrieval
 
@@ -255,6 +272,8 @@ Three layers. Full strategy and coverage map in `qa/TEST-PLAN.md`.
 
 | File | Covers |
 |---|---|
+| `test_config.py` | Every `SHIELD_*` var is read; defaults hold when unset; unrelated env vars are ignored. |
+| `test_llm.py` | `get_model()` passes `max_tokens` and no sampling parameter; 429 detection across provider wordings; retry escalates, stops at `MAX_ATTEMPTS`, and does not fire on non-429s. |
 | `test_preprocess.py` | Each redaction pattern; OTP survives as a label; URLs are preserved; type detection for all three types. |
 | `test_retrieval.py` | Against the fixture KB: a Taglish query retrieves an English advisory; `LEGIT` rows never appear; eval-set text never appears. |
 | `test_graph.py` | With `FakeListChatModel`: low confidence reflects exactly once; high confidence goes straight to `advise`; a second low-confidence pass still terminates. |
