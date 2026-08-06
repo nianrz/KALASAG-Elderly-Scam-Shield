@@ -27,5 +27,5 @@
   ],
   "similar_scams": [],
   "kb_freshness": "2026-08-06",
-  "model_id": "google_genai:gemini-2.5-flash"
+  "model_id": "bedrock_converse:global.anthropic.claude-sonnet-5"
 }

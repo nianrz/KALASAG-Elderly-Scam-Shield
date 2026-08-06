@@ -2,6 +2,8 @@
 
 Ordered by dependency, not by day. Build a thin vertical slice first (T1–T5), then replace stubs one node at a time. Something demoable exists from T5 onward.
 
+**Status 2026-08-06:** T0–T17 are done on the `prototype1` branch — full pipeline live on Bedrock Claude Sonnet 5, real KB integrated (Nian's build landed the same day), frontend complete, all three test layers green (75 pytest / 16 Vitest / 52 Cypress). The eval harness (T17) is built but the ~200-call live run has not been executed. Remaining: T18 (calibrate), T19 (bake-off), T20b (live smoke), T21 (runbook), T22 (deck).
+
 Each task states its verification. A task is not done until its verify step passes.
 
 Owner tags follow the directory ownership map in `CLAUDE.md`.
@@ -10,12 +12,8 @@ Owner tags follow the directory ownership map in `CLAUDE.md`.
 
 ## Vertical slice
 
-### T0 — Confirm what we can actually call · Aki
-Get a free Gemini key from `aistudio.google.com/apikey`, and find out which models the Accenture Bedrock sandbox exposes.
-
-This gates the bake-off (T19) and nothing else — the provider abstraction means the build proceeds on Gemini regardless. Do it early anyway; "which models does the sandbox have" has been open since 2026-07-29.
-
-**Verify:** a Gemini key in `.env` returns a completion; the Bedrock model list is written down, or recorded as still unanswered with who was asked.
+### T0 — Confirm what we can actually call · Aki — **DONE 2026-08-06**
+Answered: the Accenture Bedrock sandbox serves Claude models via bearer-token auth; `bedrock_converse:global.anthropic.claude-sonnet-5` verified live from ap-southeast-1 (the `global.` inference-profile prefix is required — the bare ID fails in-region). It is now the default and only provider; the Gemini free-tier key was removed the same day and `langchain-google-genai` dropped. See `ARCHITECTURE.md § Provider abstraction`.
 
 ### T1 — Backend scaffold and provider switch · Aki
 Create `backend/` with `uv`, FastAPI, LangGraph, and `app/llm.py` wrapping `init_chat_model(settings.model_id)`. `config.py` reads `LLM_MODEL`, `LLM_MAX_TOKENS`, `CONFIDENCE_THRESHOLD`, `LLM_RETRY_BACKOFF`, `KB_PATH` from env.
@@ -152,9 +150,9 @@ State plainly on the deck that the threshold is calibrated on the same set the a
 ### T19 — Model bake-off · Aki
 Run T17 under two or more `LLM_MODEL` values. Compare accuracy, latency, and Tagalog register.
 
-Candidates are whatever we can actually access for free: `google_genai:gemini-2.5-flash`, `google_genai:gemini-2.5-flash-lite`, and whatever the Bedrock sandbox exposes once T0 answers that. Access is the binding constraint, which is exactly the mentor's framing — this table is our answer to "how did you choose your model."
+Candidates are whatever the Bedrock sandbox exposes — T0 confirmed Claude Sonnet 5 works; try at least one more `anthropic.claude-*` ID (e.g. Haiku) for a second column. Access is the binding constraint, which is exactly the mentor's framing — this table is our answer to "how did you choose your model."
 
-`gemini-2.5-pro` is **not** a candidate. T1 confirmed live that the free tier grants it zero quota — see `ARCHITECTURE.md § Provider abstraction`. Two Gemini tiers plus Bedrock still makes a real table; if the sandbox turns out to be empty, say in the deck that the bake-off ran across the two models free access allowed.
+Gemini is no longer a candidate: its key was removed 2026-08-06 after the sandbox was verified (and `gemini-2.5-pro` never was one — T1 found the free tier grants it zero quota). If a Gemini column is wanted for the deck, re-adding the provider is an `uv add langchain-google-genai` plus a fresh free key — say so rather than presenting a one-provider table as a cross-provider comparison.
 
 Cost is not a comparison axis; every candidate is free to us. Say so rather than leaving an empty column.
 

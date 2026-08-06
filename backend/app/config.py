@@ -37,7 +37,9 @@ class Settings(BaseSettings):
         protected_namespaces=(),
     )
 
-    model_id: str = Field("google_genai:gemini-2.5-flash", alias="LLM_MODEL")
+    model_id: str = Field(
+        "bedrock_converse:global.anthropic.claude-sonnet-5", alias="LLM_MODEL"
+    )
     max_tokens: int = Field(4096, alias="LLM_MAX_TOKENS")
     confidence_threshold: float = Field(0.70, alias="CONFIDENCE_THRESHOLD")
     retry_backoff: float = Field(20.0, alias="LLM_RETRY_BACKOFF")

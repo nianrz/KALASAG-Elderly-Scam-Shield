@@ -107,21 +107,20 @@ Vitest is used rather than Jest because the frontend is Vite: it reads `vite.con
 The model is swappable by env var. All model access goes through `llm.py`; no other module imports a provider SDK.
 
 ```
-LLM_MODEL=google_genai:gemini-2.5-flash   # default — free tier
-LLM_MODEL=google_genai:gemini-2.5-flash-lite  # free tier, cheapest quota
-LLM_MODEL=google_genai:gemini-2.5-pro     # NOT on the free tier — quota is 0
-LLM_MODEL=bedrock_converse:...            # Accenture sandbox
+LLM_MODEL=bedrock_converse:global.anthropic.claude-sonnet-5   # default — Accenture sandbox, verified live
 ```
 
-**This project pays for no LLM API.** We run on free tiers and the Accenture Bedrock sandbox. Do not add a paid provider key or a dependency that assumes one.
+**This project pays for no LLM API.** The Accenture Bedrock sandbox serves Claude models under `anthropic.claude-*` IDs on AWS billing — not a key we buy. Do not add a paid provider key or a dependency that assumes one.
 
-Gemini Flash is the default because the key is free, needs no card, and the Bedrock sandbox model list is still unconfirmed (open question 2 in the PRD). Bedrock may itself serve Claude models under `anthropic.claude-*` IDs — that is AWS billing on the sandbox, not a key we buy, and it is fine.
+**Gemini support was removed on 2026-08-06.** It existed because the Bedrock sandbox model list was unconfirmed; once the sandbox was verified live on Claude Sonnet 5, the free-tier key was deleted and `langchain-google-genai` dropped. The provider switch itself is unchanged — re-adding any provider is an `uv add` of its langchain package plus an `LLM_MODEL` string. (Historical: Gemini's free tier granted zero quota on `gemini-2.5-pro`, found in T1.)
+
+**The sandbox region gotcha:** ap-southeast-1 does not serve Claude Sonnet 5 in-region — only the **global inference profile** works, hence the `global.` prefix in the model ID. The bare `anthropic.claude-sonnet-5` ID fails from Singapore. Auth is a bearer token in `AWS_BEARER_TOKEN_BEDROCK` — the `_BEDROCK` suffix is load-bearing; botocore silently falls back to SigV4 without it.
 
 **Never pass sampling parameters — no `temperature`, `top_p`, `top_k`.** Behaviour is steered by the prompt. This is a provider-portability rule, not a per-model quirk: what each provider accepts differs, some reject these outright, and a parameter that works on one `LLM_MODEL` and 400s on another defeats the whole point of the switch. Passing none of them works everywhere.
 
 **`max_tokens` may bound reasoning as well as visible output**, depending on the model. Leave headroom or responses truncate mid-answer.
 
-**Free tiers rate-limit hard.** A full eval run is roughly 200 calls; Gemini's free tier is on the order of 10–15 requests per minute. `llm.py` owns retry-with-backoff on 429 — no caller should implement its own.
+**A full eval run is roughly 200 calls.** `llm.py` owns retry-with-backoff on 429 — no caller should implement its own. The sandbox's rate limits are undocumented; the retry loop is what absorbs whatever they turn out to be.
 
 **Embeddings are not the chat provider.** Retrieval uses a local `sentence-transformers` model with a fixed 384 dimension. Switching `LLM_MODEL` must never require re-embedding the KB.
 

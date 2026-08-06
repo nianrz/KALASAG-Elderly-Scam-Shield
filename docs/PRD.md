@@ -124,7 +124,7 @@ Stated on the deck, not hidden.
 | # | Question | Status |
 |---|---|---|
 | 1 | Is a deployed demo required by the course? | Course-side, unresolved. We demo locally. |
-| 2 | Which models does the Accenture Bedrock sandbox expose? | Unconfirmed. Provider abstraction makes this non-blocking — we default to the Gemini free tier until it is answered. |
+| 2 | Which models does the Accenture Bedrock sandbox expose? | **Answered 2026-08-06.** Claude models via bearer-token auth; Claude Sonnet 5 works from ap-southeast-1 through the global inference profile and is now the default and only provider. Gemini support and its free-tier key were removed the same day. |
 | 3 | Does screenshot/OCR input ship in a later term? | Deferred deliberately. |
 
 ## Future work

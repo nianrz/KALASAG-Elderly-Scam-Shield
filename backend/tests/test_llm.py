@@ -47,7 +47,7 @@ def test_get_model_passes_max_tokens_and_no_sampling_params(monkeypatch):
         captured["kwargs"] = kwargs
         return "model"
 
-    monkeypatch.setenv("LLM_MODEL", "google_genai:gemini-2.5-pro")
+    monkeypatch.setenv("LLM_MODEL", "bedrock_converse:anthropic.claude-haiku-4-5")
     monkeypatch.setenv("LLM_MAX_TOKENS", "1234")
     llm.get_settings.cache_clear()
     monkeypatch.setattr(llm, "init_chat_model", fake_init)
@@ -57,7 +57,7 @@ def test_get_model_passes_max_tokens_and_no_sampling_params(monkeypatch):
     finally:
         llm.get_settings.cache_clear()
 
-    assert captured["model_id"] == "google_genai:gemini-2.5-pro"
+    assert captured["model_id"] == "bedrock_converse:anthropic.claude-haiku-4-5"
     assert captured["kwargs"] == {"max_tokens": 1234}
 
 

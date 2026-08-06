@@ -65,8 +65,8 @@ You do **not** need to install Python yourself — `uv sync` downloads the right
 cd backend
 uv sync
 cp .env.example .env
-# open .env and paste in your GOOGLE_API_KEY — free, no card:
-#   https://aistudio.google.com/apikey
+# open .env and paste in the Accenture sandbox Bedrock token as
+# AWS_BEARER_TOKEN_BEDROCK — ask Aki for the current one
 uv run uvicorn app.main:app --reload --port 8000
 ```
 
@@ -125,21 +125,21 @@ The stubbed E2E suite needs no provider key and no network. Only `e2e:smoke` doe
 
 | Variable | Default | |
 |---|---|---|
-| `LLM_MODEL` | `google_genai:gemini-2.5-flash` | Any `init_chat_model` string — `google_genai:` or `bedrock_converse:` |
+| `LLM_MODEL` | `bedrock_converse:global.anthropic.claude-sonnet-5` | Any `init_chat_model` string; the `global.` prefix is required from ap-southeast-1 |
 | `LLM_MAX_TOKENS` | `4096` | May bound reasoning as well as visible output |
 | `CONFIDENCE_THRESHOLD` | `0.70` | Set from the eval sweep, not asserted |
 | `LLM_RETRY_BACKOFF` | `20` | Seconds to wait after a 429 |
-| `KB_PATH` | fixture | Point at `knowledge-base/out/kb.sqlite` once it lands |
+| `KB_PATH` | real KB if built, else fixture | `knowledge-base/out/kb.sqlite` is picked up automatically once built |
 
 ### Getting a key — we pay for nothing
 
-**Gemini free tier (default).** Get a key at [aistudio.google.com/apikey](https://aistudio.google.com/apikey). Free, no card, takes a minute. Set `GOOGLE_API_KEY`.
+**AWS Bedrock (Accenture sandbox) — the only provider.** Set `AWS_BEARER_TOKEN_BEDROCK` (the `_BEDROCK` suffix is required — botocore looks for that exact name) and `AWS_REGION=ap-southeast-1`. The sandbox serves Claude on AWS billing; it costs us nothing.
 
-**AWS Bedrock (Accenture sandbox).** Set `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN`, and `AWS_REGION`, then point `LLM_MODEL` at a `bedrock_converse:` model ID. Which models the sandbox exposes is still unconfirmed — that's open question 2 in the PRD, and the provider switch is what stops it blocking anything.
+Gemini support was removed on 2026-08-06 once the sandbox was verified live — re-adding a provider is an `uv add` of its langchain package plus an `LLM_MODEL` string.
 
 > A Claude Pro/Max subscription does **not** cover API calls — that's claude.ai and Claude Code only. We deliberately depend on no paid API key.
 
-Free tiers rate-limit hard: Gemini's is roughly 10–15 requests per minute, and a full eval run is about 200 calls. `llm.py` retries with backoff, so an eval run takes minutes rather than failing.
+A full eval run is about 200 calls and the sandbox's rate limits are undocumented. `llm.py` retries with backoff on 429, so an eval run slows down rather than failing.
 
 Switching providers requires no code change and no re-embedding: embeddings are local and provider-independent by design.
 
@@ -188,9 +188,9 @@ Read `CLAUDE.md` first — conventions, ownership, and the pipeline invariants t
 
 **400 mentioning `temperature` or `top_p`.** Something passed a sampling parameter. We pass none — providers disagree about which they accept, so any of them breaks the `LLM_MODEL` switch. Only `backend/app/llm.py` should construct the model.
 
-**429 / rate limited.** Expected on a free tier. `llm.py` backs off and retries; raise `LLM_RETRY_BACKOFF` if an eval run keeps tripping it.
+**429 / rate limited.** `llm.py` backs off and retries; raise `LLM_RETRY_BACKOFF` if an eval run keeps tripping it.
 
-**Missing API key / auth error on startup.** You have no `backend/.env`, or its `GOOGLE_API_KEY` is blank. It is gitignored by design, so pulling the repo never gives you one — `cp .env.example .env` and paste your key in.
+**Auth error on the first analysis.** You have no `backend/.env`, or its `AWS_BEARER_TOKEN_BEDROCK` is blank. It is gitignored by design, so pulling the repo never gives you one — `cp .env.example .env` and paste the sandbox token in. A quick check: `uv run python check_bedrock_connection.py`.
 
 **You committed a key by accident.** Rotate it immediately; do not just delete the line. It is in the history and remains readable to anyone who clones.
 

@@ -22,7 +22,7 @@ def no_shield_env(monkeypatch):
 def test_defaults_when_nothing_is_set(no_shield_env):
     settings = Settings(_env_file=None)
 
-    assert settings.model_id == "google_genai:gemini-2.5-flash"
+    assert settings.model_id == "bedrock_converse:global.anthropic.claude-sonnet-5"
     assert settings.max_tokens == 4096
     assert settings.confidence_threshold == 0.70
     assert settings.retry_backoff == 20.0
@@ -46,10 +46,10 @@ def test_reads_every_shield_var(monkeypatch):
     assert settings.kb_path == Path("/tmp/kb.sqlite")
 
 
-def test_unrelated_env_vars_are_ignored(monkeypatch, no_shield_env):
-    monkeypatch.setenv("GOOGLE_API_KEY", "not-a-setting")
+def test_credential_env_vars_do_not_become_settings(monkeypatch, no_shield_env):
+    monkeypatch.setenv("AWS_BEARER_TOKEN_BEDROCK", "not-a-setting")
 
-    assert not hasattr(Settings(_env_file=None), "google_api_key")
+    assert not hasattr(Settings(_env_file=None), "aws_bearer_token_bedrock")
 
 
 def test_get_settings_is_cached():
