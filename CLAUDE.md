@@ -30,10 +30,12 @@ Docs dated before 2026-08-06 — the mentor consultation note, the canonical pro
 
 | File | What it settles |
 |---|---|
+| `docs/GUIDE.md` | Orientation — the whole system end to end, plus the redeploy loop. Companion, not authority: if it disagrees with a doc below, that doc wins and the guide is stale |
 | `docs/PRD.md` | Scope, users, requirements, success criteria |
 | `docs/ARCHITECTURE.md` | Graph shape, state, API contract, module boundaries |
 | `docs/DESIGN.md` | UI/UX spec, accessibility rules, EN/TL copy |
 | `docs/TASKS.md` | Ordered build tasks with verification steps |
+| `docs/DEPLOYMENT.md` | DLSU VM runbook — first-time install, redeploy, tmux, teardown |
 | `qa/TEST-PLAN.md` | Test strategy, coverage map, what is deliberately untested |
 | `docs/capstone-elderly-scam-shield.md` | Canonical proposal (source of truth for scope) |
 | `docs/2026-07-29-capstone-mentor-consultation.md` | Mentor rulings — do not contradict these without saying so |
@@ -139,6 +141,87 @@ These are load-bearing. Breaking one is a correctness bug, not a style choice.
 Prompts live in `backend/app/prompts/*.md`, not as string literals. They are the product logic — treat edits to them as code changes and run the eval after.
 
 The Advisor targets **plain Filipino/Taglish, not formal Tagalog**. A model told to "reply in Tagalog" drifts toward textbook register (*panganib*, *pagpapatunay*) that is harder to read than Taglish. Specify register explicitly.
+
+## "Upload this to the VM" — the redeploy runbook
+
+**Trigger this section on any of:** "upload this to our VM", "deploy this", "push it to the VM", "redeploy", "update the VM", "ship it", or any phrasing that means *the code on `main` should now be running at `altdsidccf.dlsu.edu.ph:32050`*. Do not ask which procedure to use — this is the only one.
+
+Full explanation in `docs/GUIDE.md` §11; first-time install in `docs/DEPLOYMENT.md`.
+
+### What this is
+
+The VM has **no clone of the repo and never will**. Three files the app cannot run without are gitignored and would not survive a `git pull` on the VM: `knowledge-base/out/kb.sqlite`, `backend/.env`, and the `backend/static/` build. So the transport is **one ~1 MB tarball built on the Mac**, not git.
+
+### Preflight
+
+Check and report, do not silently proceed:
+
+1. On `main`, clean tree, up to date with origin. If the user's work is on a branch or uncommitted, say so and stop — deploying is not the moment to discover unmerged work.
+2. `backend/.env` exists and has a non-empty `AWS_BEARER_TOKEN_BEDROCK`.
+3. `knowledge-base/out/kb.sqlite` exists (~1.7 MB).
+4. `cd backend && uv run pytest` passes. A red suite is a stop, not a warning.
+
+### Steps you run (Mac side)
+
+```bash
+cd /Users/achibukz/Code/GitHub/Elderly-Scam-Shield
+git checkout main && git pull
+
+cd frontend && npm run build && cd ..
+rm -rf backend/static && cp -R frontend/dist backend/static
+
+COPYFILE_DISABLE=1 tar czf ~/Desktop/kalasag-deploy.tgz \
+  --exclude='__pycache__' --exclude='.pytest_cache' --exclude='.venv' \
+  --exclude='backend/eval/results' \
+  backend/app backend/tests backend/eval backend/pyproject.toml backend/uv.lock \
+  backend/.env backend/.env.example backend/static backend/check_bedrock_connection.py \
+  knowledge-base/out/kb.sqlite docs/DEPLOYMENT.md
+```
+
+**`npm run build` is not optional, even for a backend-only change.** The archive ships `backend/static/` wholesale, so skipping it re-deploys whatever UI was in that folder last time.
+
+**The tar paths are relative to the repo root and must stay that way.** `config.py` resolves the KB as `<backend>/../knowledge-base/out/kb.sqlite`; flattening the structure sends it silently back to the fixture KB and nothing looks wrong.
+
+Then confirm the archive is roughly 1 MB. Much larger means an exclude did not fire and a `.venv` or `node_modules` is inside.
+
+### Steps you hand to the user (VM side)
+
+Both need the VM password, so you cannot run them. Print them and tell the user to run each with the `! ` prefix:
+
+```bash
+scp -P 32051 ~/Desktop/kalasag-deploy.tgz root@altdsidccf.dlsu.edu.ph:/root/
+```
+
+Then in the tmux session on the VM:
+
+```bash
+tar xzf /root/kalasag-deploy.tgz -C /root/kalasag && rm /root/kalasag-deploy.tgz
+tmux attach -t kalasag        # Ctrl-C to stop uvicorn
+source /root/kalasag/.local/env.sh
+cd /root/kalasag/backend
+uv run uvicorn app.main:app --host 0.0.0.0 --port 80
+# detach: Ctrl-b then d — or, if VS Code eats Ctrl-b, `tmux detach -s kalasag` from a second terminal
+```
+
+Add `uv sync` after the `source` line **only if `pyproject.toml` or `uv.lock` changed in this deploy** — check the diff and say which. Otherwise skip it; a redeploy should cost one megabyte, not a re-download of torch.
+
+`source /root/kalasag/.local/env.sh` is never optional. A fresh tmux shell has never seen those exports and `uv` is not on `PATH` without them.
+
+### Verify — you run these
+
+```bash
+curl -s http://altdsidccf.dlsu.edu.ph:32050/api/health
+curl -s http://altdsidccf.dlsu.edu.ph:32050/api/meta
+```
+
+**`chunk_count` must be 732.** Anything smaller means `KB_PATH` fell back to the fixture — the app still answers plausibly on it, so this check is the only thing that catches it.
+
+Then tell the user to open the URL and run **one real analysis end to end**, and to hard-refresh (`Cmd-Shift-R`) first. Health and meta never touch the LLM, so nothing short of a full request proves the deploy.
+
+### Afterwards
+
+- Tell the user to delete `~/Desktop/kalasag-deploy.tgz` — it contains the Bedrock bearer token in cleartext.
+- Extract-over-the-top overwrites and adds but never deletes. If this deploy **renamed or removed** a backend source file, say so and recommend `rm -rf /root/kalasag/backend/app` before extracting.
 
 ## Conventions
 
