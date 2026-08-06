@@ -1,0 +1,115 @@
+# PRD — Elderly Scam Shield
+
+**Status:** approved 2026-08-06 · **Deadline:** presentation in one week · **Owner:** Aki (Lead)
+
+## Problem
+
+Filipino scam SMS is high-volume and well-targeted. In the 8,255-message corpus the team analysed, 827 messages are outright scams, and the largest categories — online casino promos and bank impersonation — are written in Taglish that reads as ordinary to someone unfamiliar with the pattern. Elderly users are the least equipped to distinguish them and the least able to recover from a loss.
+
+Existing advice is generic ("don't click suspicious links") and English-only. Nothing tells a specific person whether the specific message in their hand is a scam, in a language and register they read comfortably.
+
+## Users
+
+**Primary — the elderly recipient.** Receives the message, pastes it, wants a plain answer. Low tech confidence. May be reading on a small screen with reduced vision. Panics easily under urgency framing, which is exactly what the scam exploits.
+
+**Secondary — the family caregiver.** Screening on someone else's behalf, often remotely. Comfortable in English. Wants enough detail to explain the verdict to the person who received it.
+
+The `English | Tagalog` toggle exists because these two users want different output languages from the same analysis.
+
+## Goals
+
+1. **Identify** whether a message is a scam and name its pattern.
+2. **Explain** the verdict in plain Filipino/Taglish, naming the specific red flags in this message.
+3. **Recommend next steps** — don't click, block, verify via the official hotline, report to I-ARC 1326 / PNP-ACG.
+4. Ship a **running multi-agent (LangGraph) prototype** over a curated knowledge base.
+5. Document **guardrails and failure modes**, with a measured accuracy figure.
+
+## Scope
+
+**In**
+- Paste-in text: SMS, email body, or URL. Filipino, English, or Taglish.
+- Verdict → explanation → next steps output.
+- LangGraph `retrieve → detect → advise` pipeline with a confidence-gated self-reflection loop.
+- Curated Philippine scam knowledge base (Nian's deliverable).
+- `English | Tagalog` output toggle.
+- Elderly-accessible UI.
+- Evaluation over the 55-message gold-labelled set, with a calibrated confidence threshold.
+- Guardrail and failure-mode documentation.
+
+**Out this term**
+- Screenshot / OCR input — **future work**, presented not built (see Limitations).
+- Voice input and text-to-speech.
+- Telco or network-level integration.
+- Live threat feeds.
+- Public deployment. The demo runs locally.
+- Languages beyond Filipino / English / Taglish.
+- Accounts, history, persistence of user submissions.
+
+## Requirements
+
+### Functional
+
+| # | Requirement |
+|---|---|
+| F1 | User pastes text into a single input and submits. |
+| F2 | Preprocessing detects message type (SMS / email / URL) and redacts PII before any LLM call. |
+| F3 | The RAG Agent rewrites the message into English red-flag concepts, then retrieves matching KB chunks by vector similarity. |
+| F4 | The Detector emits a verdict, a confidence score, and the specific red flags found, citing retrieved chunks. |
+| F5 | Below the confidence threshold, the Detector re-runs once with a self-reflection prompt stating why the prior pass was low-confidence. |
+| F6 | The Advisor produces an explanation and concrete next steps in the selected language. |
+| F7 | Hotlines and official URLs are looked up by key and passed to the Advisor as data, never generated. |
+| F8 | The UI toggles output between English and Tagalog without re-running the analysis. |
+| F9 | The UI shows the KB freshness date. |
+| F10 | The UI shows similar known scams from the corpus. |
+
+### Non-functional
+
+| # | Requirement |
+|---|---|
+| N1 | End-to-end response under 30 seconds on a typical message. |
+| N2 | Body text at least 18px, contrast at least 4.5:1, tap targets at least 44px, no timeouts. |
+| N3 | Raw user input is never written to logs, disk, or graph state. |
+| N4 | Switching LLM provider is an env-var change and requires no re-embedding. |
+| N5 | The app runs offline apart from the LLM API call. |
+
+### Verdicts
+
+`SCAM` · `LIKELY_SCAM` · `UNCLEAR` · `LIKELY_LEGIT`
+
+There is no `SAFE`. Every verdict renders with a verify-independently line. This is a guardrail, not a UI preference.
+
+## Success criteria
+
+| # | Criterion | How it is verified |
+|---|---|---|
+| S1 | Any pasted message produces a verdict, an explanation naming at least one red flag, and at least one next step. | Manual run on 10 unseen messages. |
+| S2 | Accuracy, precision, and recall are measured on all 55 gold-labelled messages. | `eval/run_eval.py` output. |
+| S3 | The confidence threshold is chosen from measured data, not asserted. | Threshold sweep table in the eval output. |
+| S4 | The self-reflection loop fires on low confidence and fires at most once. | Unit test with a fake LLM. |
+| S5 | No eval-set message is retrievable from the KB. | Verification gate in the KB build. |
+| S6 | A native speaker judges the Tagalog output as plain Taglish rather than formal Tagalog. | Team review on 10 outputs. |
+| S7 | Switching `SHIELD_MODEL` between two providers requires no code change. | Run the demo on both. |
+
+## Limitations
+
+Stated on the deck, not hidden.
+
+- Cannot catch every novel or adversarial scam. The KB freshness date is shown in the UI.
+- False positives and negatives are inherent. The threshold trades one against the other; the eval reports both.
+- **Confidence is self-reported by the model and is a known-imperfect proxy.** The threshold is calibrated on our own eval set, so the reported accuracy is not held-out accuracy. We report it as such.
+- Users may paste OTPs or account numbers. These are redacted before the LLM call and never logged, but the risk is real.
+- **Cross-lingual retrieval is a known weak point.** Authoritative sources are English; scam messages are Taglish. Mitigated two ways: a multilingual embedding model, and the RAG Agent extracting English concepts before retrieval.
+- **The input method is itself a risk.** Long-pressing a scam SMS to copy it can accidentally open the link — the exact outcome the product prevents, in the population least able to recover. Screenshot/OCR input is the designed mitigation and is presented as future work, not shipped.
+- Near-duplicate scam messages that are neither identical nor prefixes of eval-set entries remain retrievable. The corpus is heavily templated, so this weakens the eval slightly.
+
+## Open questions
+
+| # | Question | Status |
+|---|---|---|
+| 1 | Is a deployed demo required by the course? | Course-side, unresolved. We demo locally. |
+| 2 | Which models does the Accenture Bedrock sandbox expose? | Unconfirmed. Provider abstraction makes this non-blocking. |
+| 3 | Does screenshot/OCR input ship in a later term? | Deferred deliberately. |
+
+## Future work
+
+Voice and text-to-speech for low-vision users · screenshot/OCR input · telco adoption as a B2B channel · continuously-updated threat feed · broader language coverage.
