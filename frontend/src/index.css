@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+/* Accessibility baseline — see docs/DESIGN.md.
+   18px body is the floor: the primary user is elderly and often reading on a
+   phone with reduced vision. */
+html {
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

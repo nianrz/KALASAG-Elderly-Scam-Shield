@@ -12,8 +12,30 @@ STSP001 capstone. A web app where an elderly Filipino or their caregiver pastes 
 | `docs/ARCHITECTURE.md` | Graph shape, state, API contract, module boundaries |
 | `docs/DESIGN.md` | UI/UX spec, accessibility rules, EN/TL copy |
 | `docs/TASKS.md` | Ordered build tasks with verification steps |
+| `qa/TEST-PLAN.md` | Test strategy, coverage map, what is deliberately untested |
 | `docs/capstone-elderly-scam-shield.md` | Canonical proposal (source of truth for scope) |
 | `docs/2026-07-29-capstone-mentor-consultation.md` | Mentor rulings — do not contradict these without saying so |
+
+## Keeping the docs true
+
+**A decision that only exists in code or in a chat log does not exist.** When you change something the docs describe, update the doc in the same commit as the change. A stale doc is worse than no doc — someone will act on it.
+
+Use this map. If a change touches the left column, the right column changes with it.
+
+| What changed | Update |
+|---|---|
+| Scope, a requirement, a limitation, a success criterion | `docs/PRD.md` |
+| Graph shape, state fields, a node's job, the API contract, a module boundary | `docs/ARCHITECTURE.md` |
+| A screen, component, accessibility rule, verdict treatment, or any user-facing string | `docs/DESIGN.md` |
+| Test strategy, tooling, or coverage | `qa/TEST-PLAN.md` |
+| A new build step, or a task's scope | `docs/TASKS.md` |
+| A convention, invariant, tool, or ownership boundary | `CLAUDE.md` (this file) |
+| Anything a teammate must install or run | `README.md` |
+
+Two rules on top of the map:
+
+1. **Record the reasoning, not just the outcome.** "We chose X" is half a decision. "We chose X because Y, and rejected Z because W" is the part that stops the team relitigating it next week — and it is what the mentor and the panel will ask about.
+2. **Contradicting a mentor ruling is allowed; doing it silently is not.** The rulings in `docs/2026-07-29-capstone-mentor-consultation.md` are the record. If we deviate, write down the deviation and the defence, the way the KB spec does for ruling 8.
 
 ## Directory ownership
 
@@ -23,6 +45,7 @@ Work in your own directory. Branch as `branch/<name>`, merge to `main` daily.
 |---|---|
 | `backend/` | Aki (Lead), Allen (Tech) |
 | `frontend/` | James (UX) |
+| `qa/` | Aki (QA) — E2E, test plan, fixtures |
 | `knowledge-base/` | Nian (Domain) — **incoming subtree, do not author here** |
 | `docs/` | Lui (Scribe) |
 
@@ -31,10 +54,29 @@ Work in your own directory. Branch as `branch/<name>`, merge to `main` daily.
 ## Stack
 
 - **Backend** — Python 3.14, `uv`, FastAPI, LangGraph, SQLite, `sentence-transformers`
-- **Frontend** — Vite + React + TypeScript + Tailwind
-- **Tests** — pytest (backend), Vitest (frontend)
+- **Frontend** — Vite + React + TypeScript + Tailwind v4
+- **Tests** — pytest (backend) · Vitest (frontend components) · Cypress (E2E, in `qa/`)
 
 Use `uv` for every Python dependency operation. Never `pip install`.
+
+## Testing
+
+Three layers, three homes. Tests live next to what they test, except E2E.
+
+| Layer | Tool | Location | Runs against |
+|---|---|---|---|
+| Backend unit | pytest | `backend/tests/` | Fixture KB, fake LLM |
+| Frontend component | Vitest | `frontend/src/**/*.test.tsx` | jsdom |
+| E2E | Cypress | `qa/cypress/e2e/` | Stubbed API |
+| E2E smoke | Cypress | `qa/cypress/e2e/smoke/` | **Live backend + real LLM** |
+
+**One spec file per feature.** Not one file per layer. `verdict-scam.cy.ts`, `toggle.cy.ts`, `redaction.cy.ts` — a spec should be findable by the feature it covers, and a failing spec should name the broken feature in its filename.
+
+**E2E is stubbed by default.** A real analysis is 3–4 LLM calls at ~20s and real money. `cy.intercept` with fixture responses covers all four verdicts and every error state, fast and deterministically. The single live spec in `smoke/` is excluded from `npm run cy:run` and exists to catch frontend/API contract drift — the one thing stubs structurally cannot see. Run it before the demo, not on every save.
+
+**Component tests are colocated deliberately.** Tests in a distant folder stop being updated when their source changes.
+
+Vitest is used rather than Jest because the frontend is Vite: it reads `vite.config.ts` directly, where Jest would need babel or ts-jest, ESM workarounds, and `moduleNameMapper` for CSS imports. The test-authoring API is Jest's (`describe`, `it`, `expect`, `@testing-library/jest-dom`); only `jest.fn()` becomes `vi.fn()`.
 
 ## LLM provider — read before touching `backend/app/llm.py`
 

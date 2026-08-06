@@ -1,0 +1,19 @@
+{
+  "name": "scam-shield-qa",
+  "version": "0.1.0",
+  "private": true,
+  "description": "E2E and QA suite for Elderly Scam Shield",
+  "type": "module",
+  "scripts": {
+    "cy:open": "cypress open",
+    "cy:run": "cypress run --spec 'cypress/e2e/!(smoke)/**/*.cy.ts'",
+    "e2e": "start-server-and-test 'npm --prefix ../frontend run dev' http://localhost:5173 'npm run cy:run'",
+    "e2e:smoke": "cypress run --spec 'cypress/e2e/smoke/**/*.cy.ts'"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.2",
+    "cypress": "^15.20.0",
+    "start-server-and-test": "^3.0.12",
+    "typescript": "^7.0.2"
+  }
+}

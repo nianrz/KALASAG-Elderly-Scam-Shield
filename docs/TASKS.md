@@ -37,7 +37,9 @@ This unblocks everything downstream whether or not the real KB arrives.
 **Verify:** `curl` returns the documented JSON; `test_api.py` asserts the shape.
 
 ### T5 — Frontend skeleton end to end · James
-Vite + React + TS + Tailwind. Input, submit, verdict card, next steps, red flags, language toggle. Calls the real backend.
+Input, submit, verdict card, next steps, red flags, language toggle. Calls the real backend.
+
+Every element the E2E specs query needs its `data-testid` from `qa/TEST-PLAN.md § Spec map` — `message-input`, `submit`, `verdict`, `next-steps`, `red-flags`, `lang-en`, `lang-tl`, `uncertainty`, `reset`.
 
 **Verify:** paste text in the browser, see the stubbed verdict render in both languages. **This is the first demoable build — tag it.**
 
@@ -110,6 +112,18 @@ Every string in `i18n.ts` in both languages. No hardcoded copy in components.
 
 **Verify:** grep components for literal user-facing strings; a native speaker reviews the Tagalog set.
 
+### T16b — Component tests · James
+Colocated `*.test.tsx` per component, Vitest. Priority order: `VerdictCard` (all four verdicts, icon-plus-word), `LanguageToggle`, `NextSteps` (contacts verbatim), `ErrorState` (never renders the submitted text).
+
+**Verify:** `npm test` green in `frontend/`.
+
+### T16c — Green the E2E suite · Aki
+The specs in `qa/cypress/e2e/` already exist and encode the `DESIGN.md` contract. They fail until T14 lands the `data-testid` attributes and the states they assert.
+
+Do not weaken a spec to make it pass. If a spec is wrong, fix the spec **and** the doc it came from, in the same commit.
+
+**Verify:** `npm run e2e` green in `qa/`.
+
 ---
 
 ## Evaluation and delivery
@@ -137,6 +151,11 @@ Nian delivers `knowledge-base/`. Point `SHIELD_KB_PATH` at `knowledge-base/out/k
 If it has not arrived by the time T17 is done, ship on the fixture and say so on the deck.
 
 **Verify:** eval re-runs against the full KB; the leakage gate passes; accuracy is reported on the real corpus.
+
+### T20b — Live smoke run · Aki
+Run `npm run e2e:smoke` against the real backend once the KB is in. This is the only check that the frontend and API agree on the response contract.
+
+**Verify:** both smoke specs pass; every documented response key is present.
 
 ### T21 — Runbook and backup capture · Aki + Lui
 `README.md` with exact setup and run commands, verified on a second machine. Record a screen capture of a full analysis as the offline backup.

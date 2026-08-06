@@ -72,9 +72,25 @@ backend/
     run_eval.py       55-message eval + threshold sweep
     results/
 frontend/
+  vite.config.ts      vite + tailwind + vitest config in one file
   src/
-    App.tsx  api.ts  i18n.ts
-    components/  InputPanel · VerdictCard · RedFlagList · NextSteps · ContactList · SimilarScams · LanguageToggle
+    App.tsx  api.ts  i18n.ts  test-setup.ts
+    components/       InputPanel · VerdictCard · RedFlagList · NextSteps
+                      ContactList · SimilarScams · LanguageToggle
+                      + colocated *.test.tsx per component
+qa/                   QA workspace — own package.json, own node_modules
+  cypress.config.ts
+  TEST-PLAN.md
+  cypress/
+    e2e/
+      analyse/        verdict-scam · verdict-variants · red-flags · next-steps
+      language/       toggle
+      privacy/        redaction
+      errors/         error-states
+      a11y/           accessibility
+      smoke/          live-pipeline   ← the only spec hitting a real LLM
+    fixtures/         meta.json + one per verdict
+    support/          e2e.ts · commands.ts
 knowledge-base/       Nian's subtree — read-only to us
 eval-set-candidate-55.csv
 ```
@@ -229,6 +245,10 @@ Errors return `{ "error": { "code": "...", "message": "..." } }` with a user-saf
 
 ## Testing
 
+Three layers. Full strategy and coverage map in `qa/TEST-PLAN.md`.
+
+### Backend — pytest, `backend/tests/`
+
 | File | Covers |
 |---|---|
 | `test_preprocess.py` | Each redaction pattern; OTP survives as a label; URLs are preserved; type detection for all three types. |
@@ -237,6 +257,20 @@ Errors return `{ "error": { "code": "...", "message": "..." } }` with a user-saf
 | `test_api.py` | `TestClient` on `/api/analyze` — response shape, both languages, malformed input. |
 
 Graph tests use a fake model so control flow is tested without network, cost, or nondeterminism. This is the test that matters most: the reflection loop is the only place the system can hang.
+
+### Frontend — Vitest, colocated
+
+Component tests sit next to their components as `*.test.tsx`. Vitest reads the same `vite.config.ts` the app builds with, so there is no second transform pipeline to keep in sync.
+
+### E2E — Cypress, `qa/`
+
+One spec file per feature, grouped by feature folder. Every spec except `smoke/` stubs `/api/analyze` and `/api/meta` with fixtures via `cy.intercept`, which makes the suite fast, free, and deterministic while still covering all four verdicts and every error state in `DESIGN.md`.
+
+`smoke/live-pipeline.cy.ts` is the exception: it runs the real backend against a real LLM and asserts the response contract from the API section above. It is excluded from `npm run cy:run` and invoked deliberately with `npm run e2e:smoke`.
+
+**Why the split.** Stubs cannot detect the frontend and backend disagreeing about the response shape — that is exactly what the smoke spec is for. Conversely, running the whole suite live would cost money per run, take ~20s per spec, and fail on provider rate limits, which means it would stop being run. Each layer covers the other's blind spot.
+
+The default Cypress viewport is 390×844 because the elderly user is on a phone; the desktop caregiver case is asserted explicitly where it matters.
 
 ## Evaluation
 

@@ -1,0 +1,22 @@
+{
+  "verdict": "LIKELY_LEGIT",
+  "confidence": 0.83,
+  "reflected": false,
+  "message_type": "sms",
+  "redactions": [],
+  "red_flags": [],
+  "explanation": "Mukhang lehitimo po ito. Notification lang ito ng resibo, walang link at walang hinihinging impormasyon.",
+  "next_steps": [
+    "Kung may duda ka pa rin, i-check ang app mismo sa halip na sumagot dito."
+  ],
+  "contacts": [
+    {
+      "organisation": "GCash",
+      "hotline": "2882",
+      "url": "https://help.gcash.com/"
+    }
+  ],
+  "similar_scams": [],
+  "kb_freshness": "2026-08-06",
+  "model_id": "anthropic:claude-opus-5"
+}

@@ -1,18 +1,40 @@
+# macOS
 .DS_Store
+
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
 .pytest_cache/
 .venv/
-.env
-.env.local
-
 backend/.venv/
-backend/models/
 knowledge-base/.venv/
+
+# Secrets — never commit a provider key
+.env
+.env.*
+!.env.example
+
+# Node
+node_modules/
+frontend/dist/
+*.tsbuildinfo
+
+# Cypress artifacts
+qa/cypress/screenshots/
+qa/cypress/videos/
+qa/cypress/downloads/
+
+# Build outputs — regenerate with the build scripts, don't commit
 knowledge-base/out/*.sqlite
 knowledge-base/out/*.sql
 
-frontend/node_modules/
-frontend/dist/
+# Eval results — regenerate with eval/run_eval.py
+backend/eval/results/*.md
+backend/eval/results/*.json
 
-eval/results/*.json
+# Model caches. The embedding model is ~120MB downloaded on first run and
+# lives in ~/.cache/huggingface, not in the repo. Guard against a stray
+# local copy being committed.
+backend/models/
+*.safetensors
+*.bin

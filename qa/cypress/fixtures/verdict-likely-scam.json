@@ -1,0 +1,30 @@
+{
+  "verdict": "LIKELY_SCAM",
+  "confidence": 0.68,
+  "reflected": true,
+  "message_type": "sms",
+  "redactions": [],
+  "red_flags": [
+    {
+      "label": "Nag-aalok ng libreng pera kapag nag-register",
+      "detail": "Walang lehitimong site na nagbibigay ng garantisadong panalo.",
+      "chunk_id": "lure-casino-promo"
+    }
+  ],
+  "explanation": "Malamang scam po ito. Mukhang promo ng online casino na hindi lisensyado.",
+  "next_steps": [
+    "Huwag mag-deposito ng pera.",
+    "I-block ang number.",
+    "I-report sa I-ARC kung nawalan ka na ng pera."
+  ],
+  "contacts": [
+    {
+      "organisation": "I-ARC",
+      "hotline": "1326",
+      "url": "https://www.cybersecurity.ph/cybercrime-reporting/"
+    }
+  ],
+  "similar_scams": [],
+  "kb_freshness": "2026-08-06",
+  "model_id": "anthropic:claude-opus-5"
+}

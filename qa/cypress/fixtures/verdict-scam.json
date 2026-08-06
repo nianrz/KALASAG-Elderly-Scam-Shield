@@ -1,0 +1,45 @@
+{
+  "verdict": "SCAM",
+  "confidence": 0.91,
+  "reflected": false,
+  "message_type": "sms",
+  "redactions": ["OTP"],
+  "red_flags": [
+    {
+      "label": "Sinasabing naka-hold ang account mo",
+      "detail": "Ang totoong bangko ay hindi nagte-text ng link para dito. Lumalabas ito kapag nag-log in ka.",
+      "chunk_id": "lure-account-suspended"
+    },
+    {
+      "label": "May deadline na 24 oras",
+      "detail": "Pressure tactic ito. Kahit tumawag ka bukas, nandiyan pa rin ang totoong problema kung meron man.",
+      "chunk_id": "lure-urgency-deadline"
+    }
+  ],
+  "explanation": "Scam po ito. Ginagaya ng mensahe ang BDO para kunin ang login mo.",
+  "next_steps": [
+    "Huwag i-click ang link.",
+    "I-block at i-delete ang mensahe.",
+    "Tawagan ang BDO sa opisyal nilang hotline."
+  ],
+  "contacts": [
+    {
+      "organisation": "BDO Unibank",
+      "hotline": "(02) 8631-8000",
+      "url": "https://www.bdo.com.ph/"
+    },
+    {
+      "organisation": "I-ARC",
+      "hotline": "1326",
+      "url": "https://www.cybersecurity.ph/cybercrime-reporting/"
+    }
+  ],
+  "similar_scams": [
+    {
+      "text": "BDO ALERT Your online access is suspended. Reactivate here.",
+      "scam_type": "bank-impersonation"
+    }
+  ],
+  "kb_freshness": "2026-08-06",
+  "model_id": "anthropic:claude-opus-5"
+}

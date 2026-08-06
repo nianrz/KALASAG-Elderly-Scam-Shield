@@ -1,0 +1,23 @@
+{
+  "verdict": "UNCLEAR",
+  "confidence": 0.44,
+  "reflected": true,
+  "message_type": "sms",
+  "redactions": [],
+  "red_flags": [],
+  "explanation": "Hindi po namin masiguro kung scam ito. Walang katulad nito sa aming datos.",
+  "next_steps": [
+    "Huwag munang i-click ang kahit anong link.",
+    "Tanungin ang kapamilya mo bago ka kumilos."
+  ],
+  "contacts": [
+    {
+      "organisation": "I-ARC",
+      "hotline": "1326",
+      "url": "https://www.cybersecurity.ph/cybercrime-reporting/"
+    }
+  ],
+  "similar_scams": [],
+  "kb_freshness": "2026-08-06",
+  "model_id": "anthropic:claude-opus-5"
+}
