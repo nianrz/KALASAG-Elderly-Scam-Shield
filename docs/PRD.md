@@ -26,7 +26,7 @@ Existing advice is generic ("don't click suspicious links") and English-only. No
 
 **Secondary — the family caregiver.** Screening on someone else's behalf, often remotely. Comfortable in English. Wants enough detail to explain the verdict to the person who received it.
 
-The `English | Tagalog` toggle exists because these two users want different output languages from the same analysis.
+The `English | Tagalog` toggle exists because these two users want different output languages. It is set before the message is submitted; the analysis is produced in the language chosen at that moment and cannot be re-languaged afterwards without paying for a second run.
 
 ## Goals
 
@@ -70,7 +70,7 @@ The `English | Tagalog` toggle exists because these two users want different out
 | F5 | Below the confidence threshold, the Detector re-runs once with a self-reflection prompt stating why the prior pass was low-confidence. |
 | F6 | The Advisor produces an explanation and concrete next steps in the selected language. |
 | F7 | Hotlines and official URLs are looked up by key and passed to the Advisor as data, never generated. |
-| F8 | The UI toggles output between English and Tagalog without re-running the analysis. |
+| F8 | The UI toggles static copy between English and Tagalog without re-running the analysis, and the choice sets the language the analysis is produced in. The toggle is hidden on the result screen, where model-written text can no longer follow it — see `DESIGN.md § Language is chosen before the analysis`. |
 | F9 | The UI shows the KB freshness date. |
 | F10 | The UI shows similar known scams from the corpus. |
 
@@ -118,6 +118,7 @@ Stated on the deck, not hidden.
 - **Cross-lingual retrieval is a known weak point.** Authoritative sources are English; scam messages are Taglish. Mitigated two ways: a multilingual embedding model, and the RAG Agent extracting English concepts before retrieval.
 - **The input method is itself a risk.** Long-pressing a scam SMS to copy it can accidentally open the link — the exact outcome the product prevents, in the population least able to recover. Screenshot/OCR input is the designed mitigation and is presented as future work, not shipped.
 - Near-duplicate scam messages that are neither identical nor prefixes of eval-set entries remain retrievable. The corpus is heavily templated, so this weakens the eval slightly.
+- **A finished result cannot be re-languaged.** The language is fixed at submit time; reading the same verdict in the other language means running it again. Caching the Advisor's output per language was not worth the change a week from the demo.
 
 ## Open questions
 

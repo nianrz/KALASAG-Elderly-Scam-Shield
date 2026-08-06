@@ -163,6 +163,7 @@ Read `CLAUDE.md` first — conventions, ownership, and the pipeline invariants t
 
 | File | |
 |---|---|
+| [`docs/GUIDE.md`](docs/GUIDE.md) | Start here — the whole system explained end to end, including the redeploy loop |
 | [`CLAUDE.md`](CLAUDE.md) | Conventions, ownership, invariants, doc-maintenance rules |
 | [`docs/PRD.md`](docs/PRD.md) | Scope, requirements, success criteria, limitations |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Graph, state, API contract |

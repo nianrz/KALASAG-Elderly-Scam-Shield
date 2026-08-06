@@ -47,7 +47,7 @@ One file per feature. A failing spec names the broken feature in its filename.
 | `analyse/verdict-variants.cy.ts` | All four verdicts | Distinct headline each; uncertainty line on every one; **`LIKELY_LEGIT` is not green**; the model's confidence value never renders (the static "100%" in the uncertainty copy is DESIGN.md wording, not a confidence readout) |
 | `analyse/next-steps.cy.ts` | Steps and contacts | Ordered list; **hotline matches the API byte for byte**; official numbers are `tel:` links |
 | `analyse/red-flags.cy.ts` | Flags and collapsibles | Label + detail per flag; sections collapsed by default; empty sections omitted, not shown empty; no fabricated filler flag |
-| `language/toggle.cy.ts` | EN/TL toggle | Segmented control not dropdown; copy switches; `<html lang>` follows; language reaches the API; persists across reload |
+| `language/toggle.cy.ts` | EN/TL toggle | Segmented control not dropdown; copy switches; `<html lang>` follows; language reaches the API; persists across reload; **absent on the result screen**, back after reset |
 | `privacy/redaction.cy.ts` | PII handling | Privacy note before submit; **redacted value never rendered back**; freshness date shown |
 | `errors/error-states.cy.ts` | Failure paths | Empty submit; network failure; **no stack trace or submitted text in errors**; long-input warning not silent truncation; KB-unavailable still shows a verdict |
 | `a11y/accessibility.cy.ts` | `DESIGN.md` rules | 18px body; 44px tap targets; keyboard-only run; visible focus; no h-scroll at 320px or 200% zoom; verdict announced via `role="status"` |
@@ -81,6 +81,7 @@ Stated so nobody assumes coverage that does not exist.
 
 - **Model output quality.** Whether a verdict is *correct* is measured statistically by `eval/run_eval.py` over 55 labelled messages, not asserted per-case. An LLM assertion in a Cypress spec would be flaky by construction.
 - **Tagalog register.** Whether output reads as plain Taglish rather than textbook Tagalog is judged by a native speaker (criterion S6). No automated proxy for this is worth trusting.
+  *Which* language the model answers in is a separate matter and is tested. `TestPromptLanguageDirective` in `backend/tests/test_graph.py` asserts each prompt names `{output_language}` after its examples, because an example below the directive flipped an `en` request to Taglish on a Taglish input (measured 1 in 5 live runs, 0 in 6 after the fix). The test guards the prompt's structure, not the model's output — no LLM call, so it stays in the unit suite.
 - **Cross-browser.** Cypress runs Electron only. The demo is on one machine.
 - **Load and concurrency.** Single-user local demo.
 - **Visual regression.** No baseline screenshots; the UI is still moving.

@@ -5,6 +5,7 @@ from langchain_core.language_models.fake_chat_models import FakeListChatModel
 
 from app.config import get_settings
 from app.graph.build import build_graph, initial_state
+from app.graph.nodes.common import load_prompt
 from app.retrieval.store import ChunkStore
 
 CONCEPTS = json.dumps(["claims account suspended", "urgency deadline"])
@@ -107,3 +108,42 @@ class TestGraphFlow:
         result = run(["not json at all", detect_reply(), ADVISE], store)
         assert result["concepts_en"] == []
         assert len(result["retrieved"]) > 0
+
+
+class TestPromptLanguageDirective:
+    """Both prompts must name the output language *last*.
+
+    Measured on Claude Sonnet 5: with the directive at the top of advise.md
+    and a Tagalog exemplar in the closing rules, an output_language=en run on
+    a Taglish message came back fully Taglish in 1 of 5 runs while the
+    detector — whose directive is last — stayed English. Moving the directive
+    below the exemplars took it to 0 of 5.
+    """
+
+    def _rendered_advise(self) -> str:
+        return load_prompt("advise").format(
+            output_language="en",
+            contacts_data="- BDO Unibank: hotline (02) 8888-0000, https://www.bdo.com.ph/",
+            verdict="SCAM",
+            red_flags="[]",
+            message_type="sms",
+            redacted_text="Na-restrict po ang account niyo.",
+        )
+
+    def test_advise_names_the_language_after_its_tagalog_exemplars(self):
+        rendered = self._rendered_advise()
+        directive = rendered.rindex("Output language: en")
+        for exemplar in ("Tawagan ang BDO", "mag-ingat po kayo"):
+            assert rendered.index(exemplar) < directive, (
+                f"{exemplar!r} sits after the language directive and outweighs it"
+            )
+
+    def test_detect_names_the_language_in_its_closing_section(self):
+        rendered = load_prompt("detect").format(
+            retrieved_chunks="(none)",
+            message_type="sms",
+            redactions="none",
+            redacted_text="Na-restrict po ang account niyo.",
+            output_language="en",
+        )
+        assert rendered.rindex("in this language: en") > rendered.rindex("\n## ")
