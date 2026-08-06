@@ -377,7 +377,8 @@ before extracting.
 Everything lives under `/root/kalasag`. Nothing is installed system-wide, so
 `rm -rf /root/kalasag` reclaims all of it.
 
-Check what you have before starting — the deploy needs roughly 2 GB free:
+Measured on this VM: **251 GB total, 131 GB free** (2026-08-06). The deploy needs
+roughly 2 GB, so capacity is not a constraint here. Check anyway on any other box:
 
 ```bash
 df -h /root
@@ -395,8 +396,10 @@ Estimated footprint with `UV_TORCH_BACKEND=cpu`:
 | `backend/` + `knowledge-base/` | ~5 MB | app, KB, built frontend |
 | **Total** | **~2–2.7 GB** | ~1.7 GB after pruning the wheel cache |
 
-The default CUDA torch build would put this at **5–6 GB** instead. That is the
-single biggest lever on disk here, and it buys nothing — see step 4.
+The default CUDA torch build would put this at **5–6 GB** instead. With 131 GB free
+that is affordable, so the reason to avoid it is not capacity — it is the extra
+~3 GB of download on a campus link, in exchange for a GPU that never runs anything.
+See step 4.
 
 To reclaim the wheel cache once everything runs:
 
