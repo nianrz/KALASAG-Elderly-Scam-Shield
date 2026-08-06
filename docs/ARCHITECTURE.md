@@ -280,6 +280,8 @@ The frontend calls **relative** paths (`/api/analyze`, `/api/meta`). It never ho
 
 The mount is registered last in `main.py` because FastAPI matches routes in registration order — a mount at `/` declared earlier would swallow `/api/*`. It is guarded by `FRONTEND_DIST.is_dir()`, since `StaticFiles` raises at construction when the directory is missing; `backend/static/` is gitignored and absent in dev and CI, so the mount is inert everywhere but a deployed box.
 
+`POST /api/analyze` is declared `def`, not `async def`, and that is load-bearing. `graph.invoke()` is synchronous and holds for the full 40-second analysis; under `async def` it blocks the event loop, so concurrent callers serialise — measured against the deployed VM, two simultaneous requests returned in 22s and 59s, the second having waited out the first. FastAPI runs a plain `def` endpoint in a threadpool instead, so requests overlap. `health` and `meta` stay `async` because neither blocks meaningfully.
+
 Single-origin was chosen over hosting the frontend separately (Vercel was the alternative considered) because a static host serves HTTPS while the deployment target serves plain HTTP on a non-standard port, and browsers block mixed-content `fetch` unconditionally. Fixing that needs a certificate for a domain we do not control. Splitting the origins would also add a CORS allowlist and an API base URL config — work spent to make the app strictly worse. Full procedure in `docs/DEPLOYMENT.md`.
 
 ## Testing

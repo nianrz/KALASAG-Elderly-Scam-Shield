@@ -91,8 +91,12 @@ async def meta() -> MetaResponse:
     )
 
 
+# Sync on purpose, not an oversight. graph.invoke() blocks for the whole 40s
+# analysis; as `async def` that stalls the event loop and serialises every
+# concurrent request (measured: two callers took 22s and 59s). Declared `def`,
+# FastAPI runs it in a threadpool and callers overlap.
 @app.post("/api/analyze")
-async def analyze(request: AnalyzeRequest) -> AnalyzeResponse:
+def analyze(request: AnalyzeRequest) -> AnalyzeResponse:
     settings = get_settings()
     pre = preprocess(request.text)
     freshness, _ = _kb_meta()

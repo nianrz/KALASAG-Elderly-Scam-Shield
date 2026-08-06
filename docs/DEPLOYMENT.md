@@ -30,6 +30,7 @@ Verified on 2026-08-06:
 | VM disk | 251 GB total, 131 GB free |
 | Bedrock token + `global.` model ID **from the VM** | **yes** — `check_bedrock_connection.py` returned `pong` |
 | Install footprint | 5.0 GB under `/root/kalasag` |
+| Public URL end to end | **yes** — `SCAM` @ 0.98 in 40.6s, OTP redacted, real hotlines returned |
 
 On the egress check: a 404 is proof of success, not failure. It means a real HTTPS
 response came back from AWS with a certificate curl validated — a blocked or
@@ -430,14 +431,27 @@ re-downloading torch.
 
 ## Risks and gotchas
 
-**Request timeout is the most likely surprise.** An analysis is 3–4 LLM calls at
-~20s, so 60–80s end to end in the worst case. If whatever proxies 32050→80 has a
-60-second gateway timeout, slow analyses will fail while fast ones succeed — an
-intermittent failure that is miserable to debug under presentation pressure. Test a
-long message early. If it does time out, the lever is `CONFIDENCE_THRESHOLD` in
-`backend/.env`: lowering it makes the reflection pass fire less often, cutting a
-whole LLM call off the slow path. Set it from the T18 eval sweep rather than by
-guessing.
+**Measured latency, against the deployed VM:**
+
+| Case | Time |
+|---|---|
+| Scam, high confidence, no reflection | 40.6s |
+| Ambiguous, reflection fired | 44.0s |
+| Two simultaneous callers (before the threadpool fix) | 22.1s and 58.7s |
+
+The reflection pass costs only ~3.5s, not a full LLM round trip, so a single user
+is comfortably inside any plausible gateway timeout. `CONFIDENCE_THRESHOLD` is
+therefore *not* the latency lever it looked like — set it from the T18 eval sweep on
+accuracy grounds alone.
+
+**Concurrency was the real risk, and it is fixed.** `POST /api/analyze` used to be
+`async def` while calling the synchronous `graph.invoke()`, which pinned the event
+loop for the whole analysis and serialised every caller. The second of two
+simultaneous requests took 58.7s — right at the edge of a 60s gateway timeout, and
+a third would have blown past it. If a panel opens the URL and pastes at once, that
+is exactly the failure you would hit. The endpoint is now a plain `def` so FastAPI
+runs it in a threadpool. Verify after redeploying by firing two requests at once;
+both should land near 40s rather than one waiting out the other.
 
 **The bearer token now sits in plaintext on a shared university machine**, readable
 by anyone with root on that box. Rotate `AWS_BEARER_TOKEN_BEDROCK` in the Accenture
