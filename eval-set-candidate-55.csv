@@ -63,3 +63,106 @@ M050,gov,LEGIT,no,easy,Babala:Huwag ibigay ang personal na impormasyon sa text o
 M051,gov,LEGIT,no,easy,"Pwede ng ma-access ang iba't ibang government services gaya ng Philhealth, GSIS, National ID at iba pa! Download eGovPH App now on both iOS/Android.","eGovPH app announcement naming real agencies; app-store install, no link."
 M052,gov,LEGIT,no,easy,Beware of SCAMs. Be careful not to click links within text messages. Report these on the NTC website or call the NTC Hotline 1682.,"NTC advisory that itself warns against clicking links, and gives the 1682 hotline."
 M055,gov,LEGIT,no,easy,"Received a suspicious message? Delete it immediately. To verify a message, contact the company directly using official channels- do not click the link from the text.",Advisory telling the reader to verify through official channels rather than the message.
+M056,spam,SCAM,no,hard,Nakapagmessage na po ba?  Message mo na po ako para maguide kita manalo at masecure ang iyong winning slot. May chance kapa makakuha ng malaking amount ngayong araw😊,"[msg00408] Pure follow-up with no brand, no link, and no offer detail — just 'message mo na po ako para maguide kita manalo'. The hardest row in the set."
+M057,spam,SCAM,no,hard,"Boss panalunin kita sa pinata wins , now lang habang nandito pa ako basta wag ka lang po makalimot sakin hehe
+
+msg mo ko sa m3sseng3r 
+Quincy Turol (nakablack na damit, may bangs)","[msg00174] Rigged-game bait. Names a Messenger handle and describes the sender's outfit so the victim can find a person, not a site."
+M058,spam,SCAM,no,hard,"Hell0, Ikaw ang napiling manalo ng SUPER MEG@WIN at SUPER @CE  sa aming site! dahil  lagi kang TALO SA  nilalaruan mo. PAPANALUNIN KITA  NG MALAKI, MESSAGE MO LANG AKo, turuan kita ng STRATEGY, adjust ko  system para sayo!
+
+FB/Messenger: Lewej Gomez (naka yellow swimsuit) ","[msg00282] Casino bait with leetspeak evasion (Hell0, MEG@WIN) and an FB contact. Claims to adjust the system on the victim's behalf."
+M059,spam,SCAM,no,hard,"Dahil bago ang aming sit3 tulungan kita makap@ld0 basta ikaw bahala sakin pag nanal0 ka. Bigyan kitang EASYW!N na laro para makap@ldo ka agad.
+
+Add o msg moko sa MSNGR: CLEIA DAPON **naka-red backless dress ang profile pic**",[msg00407] Same chat-bait pattern with sit3/makap@ld0 evasion; moves the victim to Messenger.
+M060,spam,SCAM,no,hard,"Hi, Good Day! Naglalaro ka pa din ba ng 0nline Games? Bibigyan kita ng winning game$ na mataas ang chance manal0 at kung anong oras ka lalar0 para kahit papano makawithdraw ka, basta ikaw na din bahala sakin. Reply ''YES'' po if interested.","[msg00696] Rigged-game bait closing on a reply keyword rather than a link, so nothing is clickable."
+M061,spam,SCAM,no,hard,"Maswerte ka dahil may guro kang gagabay sa iyo 
+Makipag-ugnayan lamang kay @niya223 sa Telegram ngayon",[msg00546] Frames the scammer as a guro (mentor) and gives only a Telegram handle.
+M062,spam,SCAM,no,hard,"Utosin ang iyong telepono na gumana para sa iyo, nakikita kita araw-araw, Telegram:@niy761","[msg00595] 90 characters, cryptic, Telegram handle only. Tests behaviour on near-zero signal."
+M063,spam,SCAM,no,hard,"Exciting News! Get ready for a financial upgrade with the Unionbank Credit Card!
+
+Why Unionbank?
+- Awesome rewards
+- Low-interest rates
+- Easy transactions
+
+If you already have a credit card from another bank (creditcardholder from another bank)
+
+Just send a quick message to our friendly processing team on Viber @ 09858168790 and ask for assistance.
+
+Apply now !
+
+Thank you and we are happy to assist you.","[msg01003] Reads as a real UnionBank credit-card ad — benefits list, plausible product — until the Viber handle instead of a bank channel."
+M064,spam,SCAM,no,hard,"Special Offer! Need an affordable cash loan? Our bank  Personal Loan has got you covered! You can get extra cash up to 1M and pay in 36months.
+Fast approval! Disregard if not interested. God Bless. ",[msg01100] Loan offer in polite register: 'Disregard if not interested. God Bless.' No pressure markers at all.
+M065,spam,SCAM,no,hard,"Hi! Avail Sangla ORCR Loan w/out taking unit, Low interest rate and Fast Approval, Nationwide! Also Car/Truck Financing and Business loan. Call/Txt now!","[msg01162] Sangla ORCR loan, a real product type, with no link and a call/text instruction."
+M066,spam,SCAM,no,hard,"Avail of Security Bank!
+-ORCR Loan W/out taking Car!
+-2nd Hand Car Financing!
+
+SURE Approval LOWEST RATE!
+For Inquiries call or text 09209783638 ask for Mark!","[msg01379] Names Security Bank and gives a mobile number and a contact person, borrowing a real brand without impersonating a channel."
+M067,spam,SCAM,no,hard,r u employed or self employed?avail 50k up to 2 m! interested call this # or txt how?,"[msg01401] 85 characters of SMS-speak (r u employed), phone-only contact, no brand."
+M068,ads,LEGIT,yes,hard,"Clear calls and timeless TV, just like the good old days. The Cordless Telset keeps lolo and lola connected with ease, while Cignal brings back their favorite shows. It's comfort and connection made simple. Only P99/mo x 24 mos for Telset, Cignal from P290/mo.
+
+Get started at pldthome.info/JTC2",[msg00217] PLDT cordless telset ad aimed at lolo and lola. Product ad with a link.
+M069,ads,LEGIT,yes,hard,"From catching up with family to enjoying TV classics, the Cordless Telset makes communication simple, while Cignal brings programs for all ages. Everything you need for a home that cares for you. Get a Cordless Telset at P99/mo x 24 mos and Cignal from P290/mo: pldthome.info/STC1","[msg00219] PLDT cordless telset ad, family-communication framing."
+M070,ads,LEGIT,no,easy,"Join our 3D & AR iPad workshop on Aug 16, 1:30PM at SM Seaside Cebu, Cube Wing, 3/F. 
+
+Register at basecamp@powermaccenter.com. 
+
+*Fee applies.","[msg00262] SM workshop invitation with a date and venue. Registration is by email address only — no link, despite reading like a promo."
+M071,ads,LEGIT,yes,hard,"Need instant WiFi on the go? Grab a PLDT Home WiFi with LTE Advanced. It's light, compact, and easy to top-up. Perfect for travelers!
+
+Only P995 for a device with SIM + 15 days UNLI data + up to 2X faster LTE vs. other Smart's Home WiFi devices. Buy now at pldthome.info/jph1.
+
+DTI192419S24.",[msg00598] PLDT Home WiFi ad with a link.
+M072,ads,LEGIT,yes,hard,"This offer ends soon! Don't miss out on this opportunity to get up to P113200 in an instant! Quick, apply now via the UnionBank Online app or website https://cs.unionbankph.com/quickloan using the invite code 7E3AF4. Offer is valid until TODAY, Aug 31, 2023.
+ 
+Kindly overlook this message should you have previously secured a loan in the month of August.","[msg00813] Real UnionBank loan offer: 'This offer ends soon', up to P113200 instant cash. Deadline plus instant-cash framing, and legitimate."
+M073,ads,LEGIT,yes,hard,"Good news! We have extended the deadline to apply for your PREQUALIFIED UnionBank Quick Loans. This is your last chance to get up to P113200 in an instant! Quick, apply now via the UnionBank Online App or website https://cs.unionbankph.com/quickloan using the invite code 7E3AF4. Offer is valid until SEPT 5, 2023, 7PM. Please disregard this message if you have previously secured a loan last August.",[msg00814] Real UnionBank Quick Loan with an extended deadline and a PREQUALIFIED claim in capitals.
+M074,ads,LEGIT,no,hard,"Your dream car is within reach when you apply for a UnionBank Auto Loan! To know more about the latest Auto Loan Deals, you may visit the UnionBank website or e-mail us at vehiclefinance@unionbankph.com.","[msg00815] Real UnionBank auto loan offer. Points at 'the UnionBank website' in prose and gives an email address, so it carries no link at all."
+M075,ads,LEGIT,yes,hard,"This offer ends soon! Get the extra cash you need of up to P174900 with UD Loans by UnionDigital Bank and repay it with our convenient, budget-friendly installment plans.
+
+Apply now via https://loans.uniondigitalbank.io using the invite code 4FAAAF for your account ending in 4605.
+
+Offer is valid until Dec. 31, 2023, 11:59 PM.","[msg00818] Real UD Loans offer, up to P174900, closing deadline. Reads like an advance-fee lure."
+M076,ads,LEGIT,yes,hard,Lakers vs Celtics & more play on NBA Christmas Day this December 26! Stream all the games LIVE on NBA League Pass for only P425/mo smrt.ph/NBALPPosSMS,[msg00851] NBA League Pass streaming promo with a subscription price and a link.
+M077,ads,LEGIT,yes,hard,"Hi Scott ! The 11.11 Smart App Sale is finally here! Redeem a Maya cash voucher using your GigaPoints from Nov. 11-12 via the Smart App now!
+
+Download the Smart App at smrt.ph/SmartAppSale. For more information, please visit smrt.ph/NOV11Sale.
+
+T&Cs apply. Per DTI#179898","[msg00989] Smart app sale offering a Maya cash voucher. Voucher framing, legitimate."
+M078,ads,LEGIT,yes,hard,2/2 Download the Maya app now at maya.ph/download to know more. Thank you.,"[msg01277] Maya app download instruction, part 2 of 2."
+M079,ads,LEGIT,yes,hard,"Stream epic live games & concerts on the Smart LiveStream App! Watch UAAP, PVL, NBA, & more
+live! Best enjoyed with your Smart Signature Plan.
+
+Download now smrt.ph/livestream",[msg01287] Smart LiveStream app promo listing real leagues.
+M080,ads,LEGIT,yes,hard,"Congratulations for successfully upgrading your account with Maya, your new all-in-one money app formerly known as PayMaya.
+
+You're 1 step closer to getting an extra reward! Earn an additional ₱40 when you do your first transaction on Maya!
+
+Learn everything about Maya at maya.ph/maya-updates.","[msg01334] Maya account-upgrade confirmation. Transactional, and the kind of message a scam clones."
+M081,ads,LEGIT,yes,hard,"Thanks for cashing in! You just received P10 cashback for your InstaPay fee.
+
+Continue cashing in to your Maya account and get more rewards from paying bills, buying load, paying via card or QR, or even depositing to your 6% savings.
+
+Learn more about our promo here: maya.ph/deals","[msg01345] Maya cashback confirmation for an InstaPay fee. Unsolicited money notice, legitimate."
+M082,ads,LEGIT,yes,hard,"You've earned a total of 1 Merry Money Holiday points from transacting with Maya.
+
+Hit at least 10 points to get a share in the weekly cash prize pot! Plus, get a shot at P10,000 or a Maya VIP Pass when you pay with Maya or send money to a unique user.
+
+Your points and raffle entries reset every Wednesday, so don't forget to keep transacting with Maya this week to increase your share in the cash prize OR your chances at winning P10,000 or a Maya VIP Pass!
+
+Learn More at: maya.ph/merrymoneyholiday",[msg01385] Maya rewards points notice tied to a promo with a prize pool.
+M083,ads,LEGIT,yes,hard,"JUST FOR YOU: Apply for a Citi Rewards Card & get P2,000 GCash + no annual fee forever when you spend at least P20,000 w/in 60 days from approval. Plus,get a chance to win P50,000 GCash eGift. Apply at www.citi.asia/phwsre. More details at www.citi.asia/phwstc. Promo is until 06/30/23. DTI166339S23. This product is sold by Union Bank of the Philippines, using certain trademarks temporarily under license from Citigroup Inc. and related group entities.","[msg01443] Citi Rewards Card offer paying P2,000 in GCash. Cash-for-signup framing, legitimate."
+M084,ads,LEGIT,yes,hard,"Loan up to P174900 and get the cash you need in minutes with UnionBank Quick Loans! Pay it back in light, easy installments at low interest rates! Quick, apply now via the UnionBank Online app or website www.unionbankph.com/loans/quick-loan using the invite code ADE2C2 for account number ending 4605. Offer is valid until July 21, 2023.","[msg01446] Real UnionBank Quick Loan, up to P174900 in minutes. Direct counterpart to the link-free loan scams added above."
+M085,ads,LEGIT,yes,hard,"Visit SM Deals and sip on your fave cup of joe while indulging incredible discounts from Starbucks, Bo's, Dunkin, and more! https://gosm.link/coffee-time",[msg01466] SM Deals promo listing real merchants.
+M086,ads,LEGIT,yes,hard,"Congratulations! You are ELIGIBLE for UD Loans by UnionDigital Bank. Loan up to P390200 and have it credited to your account in minutes! Get the cash you need quickly and pay it back in light, easy installments at low interest rates! Hurry, apply now via https://loans.uniondigitalbank.io/ using the invite code BE2ACE. Offer is valid until 02/20/2024.",[msg01532] Real UD Loans offer opening 'Congratulations! You are ELIGIBLE' for up to P390200. The strongest hard negative in the set.
+M087,ads,LEGIT,yes,hard,"Hi SCOTT! Now's your chance to join Park Hyung-Sik's 2024 Asia Tour Fan Meet: SIKcret Time in Manila at the Smart Araneta Coliseum on Feb 17, 2024. 
+
+Use your GigaPoints to redeem either a Silver or a Platinum ticket via the Smart App starting at 12:00NN on Feb. 7, 2024. 
+
+Not enough points? Pay your Postpaid bill now via the Smart App (smrt.ph/GetSmartApp) to earn 5% cashback in GigaPoints. For more info, visit smrt.ph/SIKcretTime. T&Cs apply. Per DTI#185555.",[msg01543] Smart fan-meet ticket promo addressed by name.
+M088,gov,LEGIT,yes,hard,"2/2 I-REPORT SA HTTPS://NTC.GOV.PH o TUMAWAG SA 
+NTC HOTLINE 1682.","[msg01821] NTC advisory telling the reader to report scams, part 2 of 2. Carries the official ntc.gov.ph URL."
+M089,gov,LEGIT,yes,hard,SEC: Mag-ingat sa kumakalat na ?Advance Fee Scam.? Ito ay ang paghingi ng paunang bayad bago maaprobahan ang inuutang. Bawal ito. Sumangguni sa www.sec.gov.ph,[msg01872] SEC advisory warning about advance-fee scams. Government anti-scam copy that itself names a scam type.
