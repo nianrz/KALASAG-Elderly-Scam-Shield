@@ -1,9 +1,9 @@
-"""Eval harness: all 55 gold-labelled messages through the full pipeline.
+"""Eval harness: all 85 gold-labelled messages through the full pipeline.
 
 Runs with the reflection threshold forced to 0.95 so every first pass below
 0.95 also produces a second pass — that is what makes the threshold sweep
 computable from one run: verdict(t) = second-pass verdict where first-pass
-confidence < t, else first-pass verdict. Roughly 200 LLM calls per run;
+confidence < t, else first-pass verdict. Roughly 340 LLM calls per run;
 llm.py owns the 429 backoff.
 
 Gold labels are binary (SCAM/LEGIT); the pipeline is four-way. For metrics,
@@ -12,7 +12,16 @@ not-SCAM. Counting UNCLEAR against the scam class is the conservative
 choice — an UNCLEAR on a real scam is a miss the user pays for — and the
 per-message table keeps the four-way verdicts visible.
 
-Run: uv run python eval/run_eval.py [--limit N] [--out eval/results]
+Every report carries a has_link baseline above the pipeline metrics. On the
+pre-rebalance eval set that trivial rule scored F1 0.985, which no report
+ever showed; a pipeline result is only meaningful against it.
+
+Full Filipino/Taglish run (85 messages, ~340 calls):
+    uv run python eval/run_eval.py
+
+English spot-check (15 messages, ~60 calls) — catches language-directive
+regressions in the en path without paying for a second full pass:
+    uv run python eval/run_eval.py --language en --limit 15
 """
 
 import argparse
@@ -26,7 +35,7 @@ from pathlib import Path
 BACKEND_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(BACKEND_ROOT))
 
-EVAL_CSV = BACKEND_ROOT.parent / "eval-set-candidate-55.csv"
+EVAL_CSV = BACKEND_ROOT.parent / "eval-set.csv"
 RESULTS_DIR = Path(__file__).resolve().parent / "results"
 SWEEP = [round(0.50 + 0.05 * i, 2) for i in range(10)]  # 0.50 … 0.95
 RUN_THRESHOLD = 0.95
@@ -62,6 +71,24 @@ def confusion(records: list[Record], threshold: float) -> dict[str, int]:
     return counts
 
 
+def baseline_confusion(rows: list[dict]) -> dict[str, int]:
+    """Confusion matrix for the trivial rule: a link means SCAM.
+
+    Reads the hand-assigned has_link column rather than detecting links.
+    Detection is not reliable enough to build a control on — the corpus
+    carries digit-only domains, bare IPs, Cyrillic IDNs and spaced dots,
+    and the KB's own has_url column disagrees with the truth on 199 of
+    1571 rows.
+    """
+    counts = {"tp": 0, "fp": 0, "tn": 0, "fn": 0}
+    for row in rows:
+        predicted = row["has_link"].strip().lower() == "yes"
+        actual = row["gold_label"] == "SCAM"
+        key = ("tp" if predicted else "fn") if actual else ("fp" if predicted else "tn")
+        counts[key] += 1
+    return counts
+
+
 def metrics(counts: dict[str, int]) -> dict[str, float]:
     tp, fp, tn, fn = counts["tp"], counts["fp"], counts["tn"], counts["fn"]
     total = tp + fp + tn + fn
@@ -76,14 +103,19 @@ def metrics(counts: dict[str, int]) -> dict[str, float]:
     }
 
 
-def render_markdown(records: list[Record], model_id: str, threshold: float) -> str:
+def render_markdown(
+    records: list[Record], rows: list[dict], model_id: str,
+    threshold: float, language: str = "tl",
+) -> str:
     counts = confusion(records, threshold)
     m = metrics(counts)
+    b = metrics(baseline_confusion(rows))
     lines = [
         f"# Eval — {model_id}",
         "",
         f"- Run: {datetime.now():%Y-%m-%d %H:%M}",
         f"- Messages: {len(records)}",
+        f"- Output language: {language}",
         f"- Metrics threshold: {threshold} (SCAM + LIKELY_SCAM count as SCAM; "
         "UNCLEAR counts against the scam class, the conservative mapping)",
         "",
@@ -93,6 +125,15 @@ def render_markdown(records: list[Record], model_id: str, threshold: float) -> s
         "|---|---|---|",
         f"| gold SCAM | {counts['tp']} | {counts['fn']} |",
         f"| gold LEGIT | {counts['fp']} | {counts['tn']} |",
+        "",
+        "## Baseline — has_link → SCAM",
+        "",
+        "Zero LLM calls. The pipeline's result below is only meaningful "
+        "above this line.",
+        "",
+        "| accuracy | precision | recall | F1 |",
+        "|---|---|---|---|",
+        f"| {b['accuracy']:.3f} | {b['precision']:.3f} | {b['recall']:.3f} | {b['f1']:.3f} |",
         "",
         "## Metrics",
         "",
@@ -131,7 +172,15 @@ def render_markdown(records: list[Record], model_id: str, threshold: float) -> s
     return "\n".join(lines) + "\n"
 
 
-def run(limit: int | None = None, out_dir: Path = RESULTS_DIR) -> Path:
+def result_filename(model_id: str, language: str) -> str:
+    slug = model_id.replace(":", "_").replace("/", "_")
+    suffix = "" if language == "tl" else f"-{language}"
+    return f"{datetime.now():%Y%m%d-%H%M}-{slug}{suffix}.md"
+
+
+def run(
+    limit: int | None = None, out_dir: Path = RESULTS_DIR, language: str = "tl",
+) -> Path:
     from app.config import get_settings
     from app.graph.build import build_graph, initial_state
     from app.llm import get_model
@@ -151,7 +200,7 @@ def run(limit: int | None = None, out_dir: Path = RESULTS_DIR) -> Path:
         pre = preprocess(row["text"])
         started = time.time()
         state = graph.invoke(initial_state(
-            pre.redacted_text, pre.message_type, pre.redactions, "tl",
+            pre.redacted_text, pre.message_type, pre.redactions, language,
         ))
         elapsed = time.time() - started
 
@@ -169,16 +218,20 @@ def run(limit: int | None = None, out_dir: Path = RESULTS_DIR) -> Path:
               f"({elapsed:.1f}s)")
 
     out_dir.mkdir(parents=True, exist_ok=True)
-    slug = model_id.replace(":", "_").replace("/", "_")
-    out_path = out_dir / f"{datetime.now():%Y%m%d-%H%M}-{slug}.md"
-    out_path.write_text(render_markdown(records, model_id, get_settings().confidence_threshold))
+    out_path = out_dir / result_filename(model_id, language)
+    out_path.write_text(render_markdown(
+        records, rows, model_id, get_settings().confidence_threshold, language,
+    ))
     print(f"\nwrote {out_path}")
     return out_path
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--limit", type=int, default=None)
+    parser.add_argument("--limit", type=int, default=None,
+                        help="First N rows only. Use --language en --limit 15 "
+                             "for the English spot-check.")
     parser.add_argument("--out", type=Path, default=RESULTS_DIR)
+    parser.add_argument("--language", choices=["tl", "en"], default="tl")
     args = parser.parse_args()
-    run(limit=args.limit, out_dir=args.out)
+    run(limit=args.limit, out_dir=args.out, language=args.language)
