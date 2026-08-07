@@ -8,12 +8,24 @@
 
 **Tech Stack:** Python 3.14, `uv`, pytest, SQLite. KB build scripts run under `knowledge-base/.venv` (separate from the backend venv).
 
+## Status — 2026-08-07
+
+| Task | State |
+|---|---|
+| 1 · Harden the holdout key | **Done** — `eb9e233` |
+| 2 · Rename to `eval-set.csv` | **Deferred.** Spans `backend/`; travels with Tasks 5–9. The file is still `eval-set-candidate-55.csv` |
+| 3 · Repair the 51 rows | **Done** — `ccad8b9` |
+| 4 · Add the 34 rows | **Done** — `d0ab8c8` |
+| 5–10 | Not started |
+
+**The KB has not been rebuilt.** Until Task 5 runs, the 34 additions are not held out and 12 of them are still `retrievable=1` — a live invariant-5 violation. Do not run an eval before Task 5.
+
 ## Global Constraints
 
 - **Spec:** `docs/superpowers/specs/2026-08-07-eval-set-rebalance-design.md`. Read it before Task 1.
 - **Final size:** n = 85 — 51 kept + 12 link-free SCAM + 22 link-bearing LEGIT.
-- **Final composition:** SCAM 45 (15 link-free / 30 link-bearing), LEGIT 40 (18 link-free / 22 link-bearing).
-- **Expected regex baseline after rebalance:** F1 0.618, accuracy 0.565, precision 0.577, recall 0.667. Tolerance ±0.05 on F1.
+- **Final composition, as built:** SCAM 45 (13 link-free / 32 link-bearing), LEGIT 40 (20 link-free / 20 link-bearing).
+- **Regex baseline after rebalance:** F1 0.660, accuracy 0.612, precision 0.615, recall 0.711. Tolerance ±0.05 on F1. (Before: F1 0.985.)
 - **Expected `chunk_count` after rebuild: 719** (732 − 12 newly held-out SCAM chunks − 1 for `msg01484`).
 - **`has_link` is assigned by hand, never computed.** Three successive detectors disagreed with the truth; the KB's own `has_url` is wrong on 199/1571 rows.
 - **Never edit `knowledge-base/out/kb.sqlite` directly.** It is a build artifact. Change `content/` or the scripts, then rebuild.
@@ -394,7 +406,7 @@ print(collections.Counter((r['gold_label'],r['has_link']) for r in rows))
 "
 ```
 
-Expected: `Counter({('SCAM','yes'): 30, ('LEGIT','no'): 18, ('SCAM','no'): 3})`
+Expected: `Counter({('SCAM','yes'): 32, ('LEGIT','no'): 18, ('SCAM','no'): 1})`
 
 - [ ] **Step 5: Commit**
 
@@ -526,13 +538,13 @@ tp,fn=c[('SCAM','yes')],c[('SCAM','no')]
 fp,tn=c[('LEGIT','yes')],c[('LEGIT','no')]
 p=tp/(tp+fp); r_=tp/(tp+fn); f1=2*p*r_/(p+r_)
 print(f'regex baseline: acc={(tp+tn)/85:.3f} prec={p:.3f} rec={r_:.3f} f1={f1:.3f}')
-assert abs(f1-0.618)<0.05, f'composition drifted: F1 {f1:.3f}'
+assert abs(f1-0.660)<0.05, f'composition drifted: F1 {f1:.3f}'
 keys={r['text'].lower().strip() for r in rows}
 assert len(keys)==85, 'duplicate text'
 "
 ```
 
-Expected: `Counter({('SCAM','yes'):30, ('LEGIT','yes'):22, ('LEGIT','no'):18, ('SCAM','no'):15})` and `f1=0.618`.
+Expected: `Counter({('SCAM','yes'):32, ('LEGIT','yes'):20, ('LEGIT','no'):20, ('SCAM','no'):13})` and `f1=0.660`.
 
 - [ ] **Step 6: Delete the transient scripts and commit**
 
@@ -542,8 +554,8 @@ git add eval-set.csv
 git commit -m "feat: rebalance the eval set to 85 messages
 
 Adds 12 link-free SCAMs and 22 link-bearing LEGITs, breaking the
-correlation that let 'if has_link: SCAM' score F1 0.952 on the old set.
-The regex baseline now scores 0.618.
+correlation that let 'if has_link: SCAM' score F1 0.985 on the old set.
+The regex baseline now scores 0.660.
 
 The SCAM additions are chat-bait and Telegram/Messenger lures — the class
 an elderly Filipino is most likely to receive, and the class the set had
@@ -730,23 +742,23 @@ def test_baseline_uses_the_hand_assigned_has_link_column():
 
 
 def test_baseline_on_the_old_composition_is_near_perfect():
-    """The defect this rebalance fixes: 30/0/3/18 was F1 0.952."""
+    """The defect this rebalance fixes: 32/0/1/18 was F1 0.985."""
     rows = (
-        [{"gold_label": "SCAM", "has_link": "yes"}] * 30
-        + [{"gold_label": "SCAM", "has_link": "no"}] * 3
+        [{"gold_label": "SCAM", "has_link": "yes"}] * 32
+        + [{"gold_label": "SCAM", "has_link": "no"}] * 1
         + [{"gold_label": "LEGIT", "has_link": "no"}] * 18
     )
-    assert metrics(baseline_confusion(rows))["f1"] == pytest.approx(0.952, abs=0.01)
+    assert metrics(baseline_confusion(rows))["f1"] == pytest.approx(0.985, abs=0.01)
 
 
 def test_baseline_on_the_rebalanced_composition_is_weak():
     rows = (
-        [{"gold_label": "SCAM", "has_link": "yes"}] * 30
-        + [{"gold_label": "SCAM", "has_link": "no"}] * 15
-        + [{"gold_label": "LEGIT", "has_link": "yes"}] * 22
-        + [{"gold_label": "LEGIT", "has_link": "no"}] * 18
+        [{"gold_label": "SCAM", "has_link": "yes"}] * 32
+        + [{"gold_label": "SCAM", "has_link": "no"}] * 13
+        + [{"gold_label": "LEGIT", "has_link": "yes"}] * 20
+        + [{"gold_label": "LEGIT", "has_link": "no"}] * 20
     )
-    assert metrics(baseline_confusion(rows))["f1"] == pytest.approx(0.618, abs=0.01)
+    assert metrics(baseline_confusion(rows))["f1"] == pytest.approx(0.660, abs=0.01)
 ```
 
 Add `import pytest` at the top of the file if it is not already there.
@@ -828,7 +840,7 @@ git add backend/eval/run_eval.py backend/tests/test_eval.py
 git commit -m "feat: report the has_link baseline alongside the eval result
 
 An accuracy figure with no control is not evidence. On the old set the
-trivial rule scored F1 0.952, which no report ever showed. The baseline
+trivial rule scored F1 0.985, which no report ever showed. The baseline
 reads the hand-assigned has_link column rather than detecting links --
 detection is the thing that proved unreliable."
 ```
@@ -1088,7 +1100,7 @@ cd backend && uv run python eval/run_eval.py --language en --subset 15
 
 - [ ] **Step 4: Read the report before believing it**
 
-Check in order: the baseline section reads F1 ≈ 0.618 (if it does not, the CSV drifted); the pipeline beats the baseline — **if it does not, that is the finding and it must be reported, not re-run until it looks better**; the per-message table shows the 12 chat-bait additions, which are where the pipeline should earn its result.
+Check in order: the baseline section reads F1 ≈ 0.660 (if it does not, the CSV drifted); the pipeline beats the baseline — **if it does not, that is the finding and it must be reported, not re-run until it looks better**; the per-message table shows the 12 chat-bait additions, which are where the pipeline should earn its result.
 
 - [ ] **Step 5: Commit the results**
 

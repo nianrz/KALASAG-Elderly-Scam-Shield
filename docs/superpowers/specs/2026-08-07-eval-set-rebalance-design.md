@@ -20,10 +20,12 @@ In the current 55 messages, link presence and gold label are almost perfectly co
 
 | | no link | has link |
 |---|---|---|
-| **SCAM** | 3 | 30 |
+| **SCAM** | 1 | 32 |
 | **LEGIT** | 18 | 0 |
 
-`if has_link: SCAM` therefore scores **accuracy 0.941, precision 1.000, recall 0.909, F1 0.952** on the deduplicated set — with zero LLM calls. Any number `run_eval.py` reports is confounded: we have no evidence the LangGraph pipeline outperforms `grep`.
+`if has_link: SCAM` therefore scores **accuracy 0.980, precision 1.000, recall 0.970, F1 0.985** on the deduplicated set — with zero LLM calls. Any number `run_eval.py` reports is confounded: we have no evidence the LangGraph pipeline outperforms `grep`.
+
+> **These counts are hand-assigned and they corrected an earlier estimate.** Three successive automated detectors put the link-free SCAM count at 3; reading all 51 messages put it at 1. The detectors missed `.ai`, `.vin`, `.tw`, `.by`, and `.cz` domains. The correlation is *tighter* than automated measurement showed, and the baseline correspondingly higher — 0.985, not the 0.952 first reported.
 
 This is the question a panelist will ask, and today we cannot answer it.
 
@@ -46,12 +48,16 @@ This is the question a panelist will ask, and today we cannot answer it.
 
 n = 85: keep all 51 unique existing messages, add 34.
 
+**As built** (hand-verified after adding the rows):
+
 | | no link | has link | total |
 |---|---|---|---|
-| **SCAM** | 3 **+12** = 15 | 30 | 45 |
-| **LEGIT** | 18 | 0 **+22** = 22 | 40 |
+| **SCAM** | 1 **+12** = 13 | 32 | 45 |
+| **LEGIT** | 18 **+2** = 20 | **+20** = 20 | 40 |
 
-Regex baseline falls **F1 0.952 → 0.618** (accuracy 0.565, precision 0.577, recall 0.667). Class balance improves from 33/18 to 45/40.
+Regex baseline falls **F1 0.985 → 0.660** (accuracy 0.612, precision 0.615, recall 0.711). Class balance improves from 33/18 to 45/40.
+
+The LEGIT additions were drawn as 22 link-bearing rows, but reading each one moved two into the link-free column: M070's only address is an email (`basecamp@powermaccenter.com`) and M074 refers to "the UnionBank website" in prose without giving it. Both remain useful hard negatives; they just land in the other stratum, leaving LEGIT at an even 20/20.
 
 Keeping all 51 is deliberate. It lets the write-up report old-set and new-set side by side and show the baseline collapse, which is a stronger result than any single accuracy figure — and it forecloses the "did you drop the ones you failed?" question.
 
@@ -179,7 +185,7 @@ Fragments should be dropped from `retrievable` regardless — a 9-character "get
 2. No row's text is exactly 400 characters (the truncation fingerprint).
 3. Every eval row's text matches a `message_examples` row with `eval_holdout=1, retrievable=0`; zero rows with `retrievable=1`. This is the invariant-5 check and it must run in CI, not by hand — it is how M010 got through.
 4. `kb_chunks` contains no chunk whose `parent_id` is a held-out message.
-5. Regex baseline over the new set lands within ±0.05 of F1 0.618. A materially higher figure means the composition drifted during curation.
+5. Regex baseline over the new set lands within ±0.05 of **F1 0.660** (measured as built). A materially higher figure means the composition drifted.
 6. `chunk_count` in `/api/meta` reflects the rebuilt KB. The 732 figure in `CLAUDE.md` changes once rows move to held-out — **update the deploy runbook's expected count in the same commit**, or the next redeploy verification will report a false failure.
 7. `cd backend && uv run pytest` passes.
 
