@@ -53,8 +53,9 @@
     destination domain.
   red_flags: >-
     Shortened links hide where they go and do not appear on blocklists.
-    Two-thirds of scam messages carry no link at all, so a link is a strong
-    signal but its absence proves nothing.
+    A link is a strong signal, but its absence proves nothing: the
+    link-free scams in this corpus are chat-bait that moves the victim to
+    Messenger or Telegram, where the pressure happens off-SMS.
   triggers_en: "click here; visit; proceed to; tap this link; continue here"
   triggers_tl: "pindutin dito; bisitahin; pumunta dito; i-click"
   source_id: scottleechua-ph-sms

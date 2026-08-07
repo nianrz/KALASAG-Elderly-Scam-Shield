@@ -36,9 +36,15 @@ import csv  # noqa: E402
 CORPUS_SOURCE_ID = "scottleechua-ph-sms"
 LEGIT_CATEGORIES = {"ads", "gov", "notifs"}
 
+# Corpus rows shorter than this are fragments — "Hello", "getcash!!",
+# "001204649" — labelled SCAM upstream but carrying no pattern to match.
+# As retrieval targets they are noise, so they are excluded regardless of
+# label. They stay in message_examples; only retrievable is withheld.
+MIN_RETRIEVABLE_LEN = 20
+
 
 def load_eval_texts() -> list[str]:
-    path = REPO / "eval-set-candidate-55.csv"
+    path = REPO / "eval-set.csv"
     with open(path, encoding="utf-8", newline="") as handle:
         return [r["text"] for r in csv.DictReader(handle)]
 
@@ -63,7 +69,9 @@ def build_message_rows(rows: list[dict], eval_norms: list[str]) -> list[dict]:
             "brand_tag": detect_brand(row["text"]),
             "has_url": int(has_url(row["text"])),
             "taglish_markers": count_taglish_markers(row["text"]),
-            "retrievable": int(label == "SCAM" and not held),
+            "retrievable": int(
+                label == "SCAM" and not held and len(row["text"].strip()) >= MIN_RETRIEVABLE_LEN
+            ),
             "eval_holdout": int(held),
             "date_received": row.get("date-received"),
             "source_id": CORPUS_SOURCE_ID,

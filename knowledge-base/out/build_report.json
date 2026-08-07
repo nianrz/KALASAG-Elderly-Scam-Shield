@@ -13,10 +13,10 @@
     "ok-browser": 5
   },
   "holdout": {
-    "eval_matched": 55,
-    "eval_rows": 55,
-    "retrievable_messages": 692,
-    "rows_held_out": 53
+    "eval_matched": 85,
+    "eval_rows": 85,
+    "retrievable_messages": 675,
+    "rows_held_out": 88
   },
   "reconciliation": {
     "actual": {
@@ -61,7 +61,7 @@
   "table_counts": {
     "advisories": 9,
     "brand_rebuttals": 4,
-    "kb_chunks": 732,
+    "kb_chunks": 715,
     "lure_patterns": 10,
     "message_examples": 1571,
     "reporting_contacts": 4,

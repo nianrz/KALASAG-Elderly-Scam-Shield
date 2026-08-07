@@ -81,6 +81,15 @@ def run_checks(conn: sqlite3.Connection, eval_texts: list[str]) -> list[dict]:
         f"{bad_negatives} retrievable LEGIT rows",
     ))
 
+    fragments = conn.execute(
+        "SELECT COUNT(*) FROM message_examples "
+        "WHERE retrievable = 1 AND LENGTH(TRIM(text)) < 20"
+    ).fetchone()[0]
+    results.append(_result(
+        "fragments_not_retrievable", fragments == 0,
+        f"{fragments} retrievable messages under 20 characters",
+    ))
+
     blank_contacts = conn.execute("""
         SELECT COUNT(*) FROM brand_rebuttals
         WHERE TRIM(COALESCE(official_hotline,'')) = ''
@@ -116,7 +125,7 @@ def main() -> int:
     if not db_path.exists():
         print(f"No database at {db_path}. Run build_kb.py first.")
         return 1
-    with open(REPO / "eval-set-candidate-55.csv", encoding="utf-8", newline="") as handle:
+    with open(REPO / "eval-set.csv", encoding="utf-8", newline="") as handle:
         eval_texts = [r["text"] for r in csv.DictReader(handle)]
 
     conn = sqlite3.connect(db_path)
