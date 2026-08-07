@@ -46,7 +46,7 @@ knowledge-base/.venv/bin/python knowledge-base/scripts/verify_kb.py
 regenerates `ATTRIBUTION.md`. `verify_kb.py` must exit 0 — the build is not
 done until it does.
 
-Tests: `knowledge-base/.venv/bin/python -m pytest knowledge-base/tests` (50 tests).
+Tests: `knowledge-base/.venv/bin/python -m pytest knowledge-base/tests` (55 tests).
 
 ## Current build figures
 
