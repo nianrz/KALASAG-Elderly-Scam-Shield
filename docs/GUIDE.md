@@ -145,7 +145,7 @@ express cycles. If you are asked at the panel why not LangChain alone, that is t
 ### Repository layout
 
 ```
-CLAUDE.md  README.md  eval-set-candidate-55.csv
+CLAUDE.md  README.md  eval-set.csv
 docs/                PRD · ARCHITECTURE · DESIGN · TASKS · DEPLOYMENT · GUIDE (this file)
 backend/             FastAPI + LangGraph, pytest              Aki, Allen
   app/
@@ -158,7 +158,7 @@ backend/             FastAPI + LangGraph, pytest              Aki, Allen
     retrieval/         embedder.py · store.py · contacts.py
     prompts/           retrieve.md · detect.md · reflect.md · advise.md
   tests/               7 pytest modules + fixtures/kb_fixture.sqlite
-  eval/run_eval.py     55-message eval + threshold sweep
+  eval/run_eval.py     85-message eval + baseline + threshold sweep
   static/              built frontend — deploy only, gitignored, absent in dev
   var/kb_embedded.sqlite   backend-owned embedded copy of the KB
 frontend/            Vite + React 19 + TS + Tailwind v4, Vitest   James
@@ -447,9 +447,9 @@ falls back to `backend/tests/fixtures/kb_fixture.sqlite` automatically.
 | `reporting_contacts` | 4 | Where a victim actually reports, in priority order (I-ARC 1326 first) |
 | `advisories` | 9 | Full fetched advisory text from brands and government bodies |
 | `message_examples` | 1,571 | The de-duplicated corpus, labelled SCAM/LEGIT and tagged |
-| `kb_chunks` | **732** | The retrieval surface: everything above, flattened, with bilingual keyword fields and an `embedding` BLOB |
+| `kb_chunks` | **715** | The retrieval surface: everything above, flattened, with bilingual keyword fields and an `embedding` BLOB |
 
-**732 is the number to remember.** `GET /api/meta` returns `chunk_count`, and if it comes
+**715 is the number to remember.** `GET /api/meta` returns `chunk_count`, and if it comes
 back much smaller, `KB_PATH` silently fell back to the fixture. The app still answers
 plausibly on the fixture, which is exactly why that check exists — the failure is invisible
 from the UI.
@@ -477,8 +477,13 @@ knowledge base could contain.
 constraints in the schema:
 
 - **`LEGIT` rows are never retrievable.** 844 hard negatives are stored but never served.
-- **Eval-set rows are held out.** All 55 gold-labelled eval messages matched the corpus;
-  53 rows are held out after de-duplication, leaving **692 retrievable messages**.
+- **Eval-set rows are held out.** All 85 gold-labelled eval messages matched the corpus;
+  88 rows are held out after de-duplication and whitespace-variant matching, leaving
+  **675 retrievable messages**. Holdout matches on an alphanumeric identity key rather
+  than display text — `msg01484` differs from eval row M010 by a single space before the
+  URL and stayed retrievable under the old whitespace-preserving rule.
+- **Fragments are never retrievable.** Corpus rows under 20 characters — `"Hello"`,
+  `"getcash!!"`, `"001204649"` — are labelled SCAM upstream but carry no pattern to match.
 
 This is pipeline invariant 5. Retrieving the test set means measuring nothing. The backend
 enforces it a second time in SQL at load — see `store.py` below — so it holds even against a
@@ -486,7 +491,7 @@ KB build that got the flags wrong.
 
 ### Embeddings: the KB ships without them, and we add them
 
-`kb_chunks.embedding` is `NULL` for all 732 rows when the KB arrives. Picking an embedding
+`kb_chunks.embedding` is `NULL` for all 715 rows when the KB arrives. Picking an embedding
 provider was not that deliverable's call.
 
 The backend populates it on first load with our local model, **writing to a
@@ -717,7 +722,7 @@ Each chunk is scored by its **best** match across the query set — the redacted
 concept vote independently, and a chunk only needs to match one of them strongly. A mean
 would let four weak concepts drown out one exact hit.
 
-Full scan in numpy, no index. The KB is 732 rows; an ANN index would be complexity in
+Full scan in numpy, no index. The KB is 715 rows; an ANN index would be complexity in
 exchange for microseconds.
 
 ### What RAG deliberately does **not** touch: contacts
@@ -787,7 +792,7 @@ cd qa && npm run e2e:smoke    # LIVE — costs real tokens, needs the backend up
 cd backend && uv run python eval/run_eval.py [--limit N]
 ```
 
-All 55 gold-labelled messages through the full pipeline, with the reflection threshold
+All 85 gold-labelled messages through the full pipeline, with the reflection threshold
 **forced to 0.95**, so nearly every message produces both a first and a second pass. That is
 the trick that makes a threshold sweep computable from a single run:
 
@@ -810,7 +815,7 @@ accuracy results, and a per-message table. ~200 LLM calls per run; `llm.py` owns
 Running it twice under different `LLM_MODEL` values is the model bake-off — "how did you
 choose your model" answered with measurements rather than a spec sheet.
 
-**Honest framing for the deck:** the threshold is calibrated on the same 55 messages we
+**Honest framing for the deck:** the threshold is calibrated on the same 85 messages we
 report accuracy on. That is fitting to the test set. Say so rather than presenting it as
 held-out accuracy.
 
@@ -1000,7 +1005,7 @@ seen those exports, and without them `uv` is not on `PATH` at all.
 
 ```bash
 curl http://altdsidccf.dlsu.edu.ph:32050/api/health     # {"status":"ok"}
-curl http://altdsidccf.dlsu.edu.ph:32050/api/meta       # chunk_count MUST be 732
+curl http://altdsidccf.dlsu.edu.ph:32050/api/meta       # chunk_count MUST be 715
 ```
 
 Then open `http://altdsidccf.dlsu.edu.ph:32050` and **run one real analysis end to end**.
@@ -1131,7 +1136,7 @@ Two more that are not on that list but behave like it:
 
 ## 14. Troubleshooting
 
-**`chunk_count` is small (not 732).** `KB_PATH` fell back to the fixture. The KB did not
+**`chunk_count` is small (not 715).** `KB_PATH` fell back to the fixture. The KB did not
 land in the archive, or the directory structure got flattened. The app answers plausibly on
 the fixture, which is why this is checked explicitly — the failure is invisible from the UI.
 
@@ -1174,7 +1179,7 @@ browser is serving the cached bundle. Hard-refresh first.
 
 Worth having ready, because the panel will ask.
 
-- **The confidence threshold is calibrated on the same 55 messages we report accuracy on.**
+- **The confidence threshold is calibrated on the same 85 messages we report accuracy on.**
   That is fitting to the test set, and we say so rather than calling it held-out accuracy.
 - **No OCR.** Users receive scams as screenshots constantly. Presented as future work, not
   built.

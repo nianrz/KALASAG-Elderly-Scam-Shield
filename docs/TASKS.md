@@ -136,7 +136,7 @@ Do not weaken a spec to make it pass. If a spec is wrong, fix the spec **and** t
 ## Evaluation and delivery
 
 ### T17 — Eval harness · Aki
-`eval/run_eval.py` — all 55 messages through the full pipeline, emitting a confusion matrix, accuracy/precision/recall/F1, a threshold sweep from 0.50 to 0.95, and a per-message table. Markdown out to `eval/results/`.
+`eval/run_eval.py` — all 85 messages through the full pipeline, emitting a `has_link → SCAM` baseline, a confusion matrix, accuracy/precision/recall/F1, a threshold sweep from 0.50 to 0.95, and a per-message table. Markdown out to `eval/results/`. `--language en --limit 15` runs the English spot-check.
 
 **Verify:** produces the report; numbers are internally consistent.
 

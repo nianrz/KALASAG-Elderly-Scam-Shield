@@ -134,7 +134,7 @@ These are load-bearing. Breaking one is a correctness bug, not a style choice.
 2. **Hotlines and official URLs are read by key, never retrieved semantically.** They come from `brand_rebuttals` and `reporting_contacts` and are passed to the Advisor as data. A fuzzy-matched hotline handed to a panicking user is the one failure this product cannot survive.
 3. **The Detector never claims certainty.** There is no `SAFE` verdict. Even `LIKELY_LEGIT` renders with "verify independently before acting."
 4. **The self-reflection loop is bounded at one pass.** A loop that cannot terminate is a demo failure.
-5. **Eval-set messages are held out of retrieval.** `eval-set-candidate-55.csv` is the test; retrieving it means measuring nothing.
+5. **Eval-set messages are held out of retrieval.** `eval-set.csv` is the test; retrieving it means measuring nothing.
 
 ## Prompts
 
@@ -216,7 +216,7 @@ curl -s http://altdsidccf.dlsu.edu.ph:32050/api/health
 curl -s http://altdsidccf.dlsu.edu.ph:32050/api/meta
 ```
 
-**`chunk_count` must be 732.** Anything smaller means `KB_PATH` fell back to the fixture — the app still answers plausibly on it, so this check is the only thing that catches it.
+**`chunk_count` must be 715.** Anything smaller means `KB_PATH` fell back to the fixture — the app still answers plausibly on it, so this check is the only thing that catches it.
 
 Then tell the user to open the URL and run **one real analysis end to end**, and to hard-refresh (`Cmd-Shift-R`) first. Health and meta never touch the LLM, so nothing short of a full request proves the deploy.
 

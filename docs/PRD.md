@@ -45,7 +45,7 @@ The `English | Tagalog` toggle exists because these two users want different out
 - Curated Philippine scam knowledge base (Nian's deliverable).
 - `English | Tagalog` output toggle.
 - Elderly-accessible UI.
-- Evaluation over the 55-message gold-labelled set, with a calibrated confidence threshold.
+- Evaluation over the 85-message gold-labelled set, reported against a `has_link` baseline, with a calibrated confidence threshold.
 - Guardrail and failure-mode documentation.
 
 **Out this term**
@@ -97,7 +97,7 @@ There is no `SAFE`. Every verdict renders with a verify-independently line. This
 | # | Criterion | How it is verified |
 |---|---|---|
 | S1 | Any pasted message produces a verdict, an explanation naming at least one red flag, and at least one next step. | Manual run on 10 unseen messages. |
-| S2 | Accuracy, precision, and recall are measured on all 55 gold-labelled messages. | `eval/run_eval.py` output. |
+| S2 | Accuracy, precision, and recall are measured on all 85 gold-labelled messages, and reported alongside the `has_link → SCAM` baseline the pipeline must beat. | `eval/run_eval.py` output. |
 | S3 | The confidence threshold is chosen from measured data, not asserted. | Threshold sweep table in the eval output. |
 | S4 | The self-reflection loop fires on low confidence and fires at most once. | Unit test with a fake LLM. |
 | S5 | No eval-set message is retrievable from the KB. | Verification gate in the KB build. |
@@ -117,7 +117,10 @@ Stated on the deck, not hidden.
 - Users may paste OTPs or account numbers. These are redacted before the LLM call and never logged, but the risk is real.
 - **Cross-lingual retrieval is a known weak point.** Authoritative sources are English; scam messages are Taglish. Mitigated two ways: a multilingual embedding model, and the RAG Agent extracting English concepts before retrieval.
 - **The input method is itself a risk.** Long-pressing a scam SMS to copy it can accidentally open the link — the exact outcome the product prevents, in the population least able to recover. Screenshot/OCR input is the designed mitigation and is presented as future work, not shipped.
-- Near-duplicate scam messages that are neither identical nor prefixes of eval-set entries remain retrievable. The corpus is heavily templated, so this weakens the eval slightly.
+- Near-duplicate scam messages that are neither identical nor prefixes of eval-set entries remain retrievable. The corpus is heavily templated, so this weakens the eval slightly. Holdout matching was tightened on 2026-08-07 to ignore whitespace and punctuation, which closed one such leak (`msg01484`, a one-space variant of eval row M010).
+- **Email and bare-URL inputs are not evaluated.** The pipeline accepts all three input types, but the evaluation corpus is SMS-only. Covering the other two would mean authoring synthetic messages, which measures the authors rather than the product. Accuracy on pasted emails and URLs is unmeasured.
+- **The eval set is deliberately stratified, not representative.** It oversamples hard cases in order to discriminate between systems. Its F1 is a discrimination score, not an estimate of accuracy in the field.
+- **Gold labels are inherited from the upstream Kaggle corpus and contain errors.** The 85 eval messages are hand-reviewed; the retrieval corpus is not. In the one 26-message slice checked by hand, 10 rows were mislabelled or were fragments too short to label.
 - **A finished result cannot be re-languaged.** The language is fixed at submit time; reading the same verdict in the other language means running it again. Caching the Advisor's output per language was not worth the change a week from the demo.
 
 ## Open questions
