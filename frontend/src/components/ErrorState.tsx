@@ -13,7 +13,7 @@ export function ErrorState({ language, onRetry }: Props) {
     <div
       data-testid="error"
       role="alert"
-      className="rounded-xl border-2 border-scam bg-white px-5 py-4"
+      className="rounded-xl border-2 border-scam bg-white px-5 py-4 text-center"
     >
       <p className="font-bold">{t(language, 'error.generic')}</p>
       <button

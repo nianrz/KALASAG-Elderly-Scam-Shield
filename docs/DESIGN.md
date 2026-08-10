@@ -29,6 +29,26 @@ Non-negotiable. These are requirement N2 and a stated capstone objective.
 | Zoom | Layout holds to 200% browser zoom without horizontal scroll. |
 | Language | `<html lang>` updates with the toggle so screen readers pronounce Tagalog correctly. |
 
+## Visual identity
+
+**Revised 2026-08-11 (Allen) to match the Figma prototype.** The palette lives in `@theme` in `frontend/src/index.css`; nothing hard-codes a hex outside it, except `public/favicon.svg`, which a browser renders outside the document and so cannot read the variables.
+
+| Token | Value | Used for |
+|---|---|---|
+| `paper` / `paper-deep` | `#f7efe7` / `#efe4d7` | Page background, inset blocks |
+| `ink` / `ink-soft` | `#1f2230` / `#4b5162` | Body copy, secondary copy |
+| `shield` | `#2222b8` | Primary action, active toggle, step badges |
+| `shield-deep` | `#17177f` | Wordmark, section headings, hover, analysing indicator |
+| `shield-bright` | `#2b3ce8` | The one accent — the "paste the message" prompt |
+| `gold` | `#f0b429` | The check inside the mark, analysing dots |
+| `line` | `#e2d7c7` | Borders |
+
+The blues are a saturated indigo, not the muted navy they replaced: on a warm cream page a desaturated blue reads as grey, and the submit button has to be unmistakably the only primary action. Every pair clears the contrast rule above — white on `shield` is 10.6:1, `shield-bright` on paper 6.3:1, white on `scam` (`#c62b1c`) 5.6:1.
+
+**Logo:** a crested shield with a gold check — `ShieldMark()` in `App.tsx` and `public/favicon.svg`, the same two paths in both. Edit both or the tab icon drifts from the header.
+
+**The input column is centre-aligned; the result is not.** Tagline, prompt, validation messages, privacy note, freshness date and the error card's message and retry button all centre on the input screen, which is a short symmetrical column and reads as one calm block. Result content stays left-aligned: it is prose and lists, and centred body copy gives a ragged left edge that a low-vision reader has to hunt for on every line.
+
 ## Screens
 
 One page, three states. No routing, no navigation.
@@ -57,7 +77,9 @@ One page, three states. No routing, no navigation.
 └──────────────────────────────────────────────┘
 ```
 
-The privacy line sits under the button because that is where hesitation happens. The freshness date is a limitation stated honestly, not fine print.
+The privacy line sits under the button because that is where hesitation happens, prefixed by a small `✓` — decorative and `aria-hidden`, since the sentence already carries the promise. The freshness date is a limitation stated honestly, not fine print.
+
+**The freshness line renders on every load, including one where `/api/meta` never answered.** It falls back to `FALLBACK_FRESHNESS` in `InputPanel.tsx` — the KB's own build date. A limitation stated honestly cannot be a limitation that disappears whenever the metadata request fails; and the date is a property of the shipped KB, so a constant beside the component is as true as the endpoint. The KB-unavailable banner, not a missing date, is what tells the user the database is down.
 
 The submit button is full-width and the only primary action on screen.
 
@@ -66,6 +88,12 @@ The submit button is full-width and the only primary action on screen.
 Replace the button with a static progress indicator and a plain-language step label — *Binabasa ang mensahe → Hinahanap ang mga katulad na scam → Sinusuri ang mga red flag → Inihahanda ang payo*.
 
 Steps are shown because a 20-second wait with no feedback reads as broken. They are **not** a progress bar with a percentage, which would be a lie about remaining time.
+
+**"Replace the button" means in the button's own slot.** `InputPanel` swaps the indicator in where the button was, so it appears under the user's eye and thumb — it does not render below the privacy and freshness lines, which is where it used to land and which read as a second, unrelated element.
+
+**Only the textarea dims while analysing, never the page.** Dimming the whole screen would grey out the very message the user is waiting on a verdict about, and the disabled textarea is the only thing that actually became uninteractive.
+
+**The animated dots sit to the right of the label and the label carries no ellipsis of its own.** The dots *are* the ellipsis; a label ending in `…` beside three pulsing dots reads as a rendering bug.
 
 ### 3. Result
 
@@ -125,8 +153,8 @@ Colour is never the only signal. Each verdict carries an icon, a word, and a dis
 | Component | Responsibility |
 |---|---|
 | `LanguageToggle` | Two-button segmented control, never a dropdown. Re-renders copy without re-running analysis. Persists to `localStorage`. Absent from the result view — see § Language is chosen before the analysis. |
-| `InputPanel` | Textarea, submit button, privacy note, freshness badge. Disabled while analysing. |
-| `AnalysingState` | Static indicator + step label. |
+| `InputPanel` | Textarea, submit button, privacy note, freshness badge. The textarea dims while analysing, and the submit button's slot holds `AnalysingState` for the duration. |
+| `AnalysingState` | Static indicator + step label, with the pulsing dots to the right of the label. |
 | `VerdictCard` | Icon, headline, one-line summary. The largest element on screen. |
 | `NextSteps` | Ordered list. Hotlines rendered as `tel:` links, since these are the numbers we *want* tapped. |
 | `RedFlagList` | Bulleted; each flag is a bold label plus a plain-language detail line. |
@@ -189,7 +217,7 @@ Every one of these is reachable and needs a design, not just the happy path.
 | State | Behaviour |
 |---|---|
 | Empty input submitted | Inline message under the textarea. Do not disable the button — a disabled button with no explanation is worse. |
-| Analysing | Step indicator, input disabled, no cancel (a cancel that leaves a half-run graph is worse than waiting). |
+| Analysing | Step indicator in the button's slot, textarea dimmed and disabled, no cancel (a cancel that leaves a half-run graph is worse than waiting). |
 | Result, all four verdicts | Per the table above. |
 | No red flags found on a `LIKELY_LEGIT` | Show the verdict and the verify-independently line. Do not fabricate a filler bullet. |
 | No similar scams | Omit the section entirely rather than showing an empty accordion. |

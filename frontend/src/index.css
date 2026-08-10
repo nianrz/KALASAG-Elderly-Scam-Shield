@@ -9,29 +9,37 @@
  * Atkinson Hyperlegible is designed for low-vision readers; that choice IS
  * the design. Verdict treatments are fixed by docs/DESIGN.md — LIKELY_LEGIT
  * is deliberately blue, never green.
+ *
+ * The blues are the saturated indigo of the Figma redesign (2026-08-11), not
+ * the earlier muted navy: on a warm cream page a desaturated blue reads as
+ * grey, and the primary action has to be unmistakably the primary action.
+ * Every pair below clears the contrast rule in docs/DESIGN.md — white on
+ * --color-shield is 10.6:1, --color-shield-bright on paper 6.3:1, white on
+ * --color-scam 5.6:1.
  */
 
 @theme {
   --font-sans: 'Atkinson Hyperlegible', system-ui, sans-serif;
   --font-display: 'Fraunces', Georgia, serif;
 
-  --color-paper: #faf6ee;
-  --color-paper-deep: #f1ead9;
-  --color-ink: #232838;
-  --color-ink-soft: #4d5468;
-  --color-shield: #2e4b77;
-  --color-shield-deep: #243b5e;
-  --color-gold: #b98a2d;
-  --color-line: #ddd3bd;
+  --color-paper: #f7efe7;
+  --color-paper-deep: #efe4d7;
+  --color-ink: #1f2230;
+  --color-ink-soft: #4b5162;
+  --color-shield: #2222b8;
+  --color-shield-deep: #17177f;
+  --color-shield-bright: #2b3ce8;
+  --color-gold: #f0b429;
+  --color-line: #e2d7c7;
 
-  --color-scam: #b0271d;
+  --color-scam: #c62b1c;
   --color-scam-ink: #ffffff;
   --color-likely-scam: #f3b063;
   --color-likely-scam-ink: #492a00;
   --color-unclear: #f4d46a;
   --color-unclear-ink: #443500;
-  --color-legit: #cfe0f4;
-  --color-legit-ink: #16365c;
+  --color-legit: #d8ddfb;
+  --color-legit-ink: #1a1a7a;
 }
 
 html {
@@ -44,7 +52,7 @@ body {
   line-height: 1.65;
   color: var(--color-ink);
   background:
-    radial-gradient(ellipse 90% 40% at 50% -5%, rgba(46, 75, 119, 0.07), transparent),
+    radial-gradient(ellipse 90% 40% at 50% -5%, rgba(34, 34, 184, 0.06), transparent),
     var(--color-paper);
   min-height: 100dvh;
 }

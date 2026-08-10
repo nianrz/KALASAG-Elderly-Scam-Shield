@@ -26,14 +26,16 @@ export function AnalysingState({ language }: Props) {
       data-testid="analysing"
       role="status"
       aria-live="polite"
-      className="flex min-h-14 items-center justify-center gap-4 rounded-xl bg-shield-deep px-6 py-4 text-white"
+      className="flex min-h-14 items-center justify-center gap-3 rounded-xl bg-shield-deep px-6 py-4 text-white"
     >
+      {/* The animated dots carry the ellipsis, so the label must not repeat it
+          as literal text — two sets of trailing dots read as a rendering bug. */}
+      <span className="font-bold">{t(language, STEP_KEYS[step])}</span>
       <span className="flex gap-1.5" aria-hidden="true">
         <span className="analysing-dot h-2.5 w-2.5 rounded-full bg-gold" />
         <span className="analysing-dot h-2.5 w-2.5 rounded-full bg-gold" />
         <span className="analysing-dot h-2.5 w-2.5 rounded-full bg-gold" />
       </span>
-      <span className="font-bold">{t(language, STEP_KEYS[step])}…</span>
     </div>
   )
 }

@@ -4,7 +4,6 @@ import { analyze, fetchMeta } from './api'
 import type { Language } from './i18n'
 import { t } from './i18n'
 import { AnalysedMessage } from './components/AnalysedMessage'
-import { AnalysingState } from './components/AnalysingState'
 import { ErrorState } from './components/ErrorState'
 import { InputPanel } from './components/InputPanel'
 import { LanguageToggle } from './components/LanguageToggle'
@@ -21,18 +20,21 @@ function storedLanguage(): Language {
   return localStorage.getItem(LANG_KEY) === 'en' ? 'en' : 'tl'
 }
 
+// Crested shield with a gold check, per the Figma mark. Kept in sync by hand
+// with public/favicon.svg, which needs literal hexes rather than the theme
+// variables — a browser renders a favicon outside the document.
 function ShieldMark() {
   return (
     <svg viewBox="0 0 24 24" className="h-9 w-9" aria-hidden="true">
       <path
-        d="M12 2 4 5.5v6c0 4.8 3.4 8.6 8 10.5 4.6-1.9 8-5.7 8-10.5v-6L12 2Z"
+        d="M4 2.4 8.2 6.2 12 2.4l3.8 3.8L20 2.4v9.3c0 5.1-3.2 9.2-8 10.9-4.8-1.7-8-5.8-8-10.9V2.4Z"
         fill="var(--color-shield)"
       />
       <path
-        d="m8.6 12 2.3 2.4 4.5-4.8"
+        d="m8 12.6 2.9 2.9 5.4-6"
         fill="none"
         stroke="var(--color-gold)"
-        strokeWidth="2.2"
+        strokeWidth="2.8"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -107,7 +109,7 @@ export default function App() {
 
       {phase !== 'result' && (
         <main>
-          <p className="mb-6 font-display text-xl text-ink-soft">
+          <p className="mb-4 text-center font-display text-xl text-ink">
             {t(language, 'app.tagline')}
           </p>
           <InputPanel
@@ -122,11 +124,6 @@ export default function App() {
             inputError={inputError}
             meta={meta}
           />
-          {phase === 'analysing' && (
-            <div className="mt-4">
-              <AnalysingState language={language} />
-            </div>
-          )}
           {phase === 'error' && (
             <div className="mt-4">
               <ErrorState language={language} onRetry={() => submit(text)} />
