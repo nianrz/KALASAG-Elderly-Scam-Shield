@@ -36,7 +36,11 @@ or an official advisory put it there.
 | `reporting_contacts` | 4 | Where a victim actually reports, in priority order |
 | `advisories` | 9 | Full fetched advisory text from brands and government |
 | `message_examples` | 1,571 | The de-duplicated corpus, labelled and tagged |
-| `kb_chunks` | 715 | The retrieval surface, with bilingual keyword fields |
+| `kb_chunks` | 609 | The retrieval surface, with bilingual keyword fields |
+
+**Updated 2026-08-10:** `kb_chunks` was 715 when this was written. Near-duplicate
+deduplication removed 106 redundant retrieval targets — 52 template families, each
+now keeping its longest member. **Use 609 on the slide.**
 
 **27 curated documents** against the spec's ~25–30 estimate.
 
@@ -90,7 +94,7 @@ evaluation and never served.
 
 ## What is deliberately absent
 
-**Embeddings.** All 715 chunks have `embedding = NULL`. This is a decision, not
+**Embeddings.** All 609 chunks have `embedding = NULL`. This is a decision, not
 an omission: the embedding provider is unresolved and the Bedrock sandbox model
 list is unconfirmed, and picking a model would silently fix a vector dimension
 across the schema. The stub, the placeholder dimension, and the exact steps to

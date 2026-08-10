@@ -12,7 +12,9 @@ tags: [capstone, kalasag, rag, retrieval, embeddings, measurement, orientation]
 
 **Companion to** `docs/GUIDE.md` (whole-system orientation) and `docs/2026-08-08-kb-rag-measurement-review.md` (the measurement findings). This one explains the retrieval mechanism itself: what it does, why it works, and why measuring it needs more than one number.
 
-Figures are from the KB built 2026-08-08 (715 chunks). If `build_report.json` says something else, it is newer and it wins.
+Figures are from the KB built 2026-08-10 (609 chunks, after near-duplicate deduplication). If `build_report.json` says something else, it is newer and it wins.
+
+Deduplication on 2026-08-10 removed 106 redundant retrieval targets. The metrics in "Measuring it" below were re-run on both pools that day, so they are a true before/after rather than a single snapshot.
 
 ---
 
@@ -38,7 +40,7 @@ The entire search is one line, `backend/app/retrieval/store.py:94`:
 scores = (query_vectors @ self._vectors.T).max(axis=0)
 ```
 
-A `(n_queries × 384) @ (384 × 715)` matrix multiply, then take the top 6. Full scan, no vector index — at 715 rows numpy brute force beats any tree, and an index would be a dependency and a build step for nothing.
+A `(n_queries × 384) @ (384 × 609)` matrix multiply, then take the top 6. Full scan, no vector index — at 609 rows numpy brute force beats any tree, and an index would be a dependency and a build step for nothing.
 
 ### The prefix asymmetry is load-bearing
 
@@ -55,11 +57,11 @@ Dropping the prefixes, or using the same one on both sides, measurably degrades 
 
 ## What is actually in the KB
 
-715 chunks, and they are not all the same kind of thing:
+609 chunks, and they are not all the same kind of thing:
 
 | parent type | count | what it is |
 |---|---|---|
-| `message_example` | 675 | real corpus scam messages |
+| `message_example` | 569 | real corpus scam messages |
 | `advisory` | 26 | official warnings |
 | `lure_pattern` | 10 | named tactics with red flags |
 | `brand_rebuttal` | 4 | "BDO will never text you a link" |
@@ -118,7 +120,7 @@ This is pipeline invariant 2, and it is the most important design decision in th
 
 The model does not reliably know that `9910.омск.рус` is a Philippine casino lure, or what BDO's current advisory actually says. Retrieval grounds the verdict in curated local specifics the model never saw in training.
 
-The alternatives are worse for this project: fine-tuning costs money and a labelled dataset and has to be redone per model, and stuffing the whole KB into every prompt costs tokens on 715 chunks to use 6. RAG is updateable by editing a YAML and rebuilding — which matters when the domain expert is a teammate, not an ML engineer.
+The alternatives are worse for this project: fine-tuning costs money and a labelled dataset and has to be redone per model, and stuffing the whole KB into every prompt costs tokens on 609 chunks to use 6. RAG is updateable by editing a YAML and rebuilding — which matters when the domain expert is a teammate, not an ML engineer.
 
 ---
 
@@ -135,20 +137,23 @@ Both score as a win. So a good F1 is not evidence the KB is doing anything. You 
 
 ### Retrieval-level metrics — zero LLM calls
 
-These are pure geometry. They run in seconds and cost nothing, so they can go in CI. Current values:
+These are pure geometry. They run in seconds and cost nothing, so they can go in CI. Both pools measured 2026-08-10 under identical conditions:
 
-| question | metric | 2026-08-08 |
-|---|---|---|
-| Is it cheating? | eval messages reachable by search | **0** (was 13 pre-rebuild) |
-| Did it fetch the right *kind* of thing? | `scam_type` recall@3 / @6 / @10 | **0.800 / 0.800 / 0.829** |
-| Did it fetch anything? | queries returning 0 chunks | **0 of 85** |
-| Do the vectors separate the classes? | mean top-6 similarity, SCAM vs LEGIT | **0.887 vs 0.853** |
+| question | metric | before (715) | after (609) |
+|---|---|---|---|
+| Is it cheating? | eval messages reachable by search | 0 (was 13 pre-rebuild) | **0** |
+| Does it fetch six *different* things? | distinct messages in top-6, mean / worst | 5.376 / 2 | **6.000 / 6** |
+| Did it fetch the right *kind* of thing? | `scam_type` recall@3 / @6 / @10 | 0.800 / 0.800 / 0.829 | **0.800 / 0.829 / 0.857** |
+| Did it fetch anything? | queries returning 0 chunks | 0 of 85 | **0 of 85** |
+| Do the vectors separate the classes? | mean top-6 similarity, SCAM vs LEGIT | 0.887 vs 0.853 | separation 0.0310 |
 
-Two readings worth carrying forward:
+Three readings worth carrying forward:
 
-**`recall@3 == recall@6`.** Chunks 4–6 contribute no additional same-type evidence. `TOP_K = 6` is buying Detector context tokens for nothing. Check the `advisory` path before changing it — those chunks are rarer and may need the wider window.
+**The `recall@3 == recall@6` plateau was duplication, and it is gone.** Chunks 4–6 used to contribute no additional same-type evidence, which made `TOP_K = 6` look like wasted context. The cause was that slots 4–6 held template variants of slots 1–3, and a variant cannot add a new `scam_type`. With 106 redundant targets removed, recall@6 pulls ahead of recall@3 (0.829 vs 0.800). **`TOP_K` stays at 6** — cutting to 3 would now cost 0.029 recall. The earlier "investigate 6 → 3" recommendation is superseded.
 
-**Recall is measured against a skewed pool.** 406 of 715 chunks are `casino` and 207 have no `scam_type`. 0.800 is against that distribution, not a balanced one.
+**Every query now returns six distinct messages.** The mean went 5.376 → 6.000 and the worst case 2 → 6, so no query has a duplicate pair in its window any more. The rarer curated content picked up the freed slots: `advisory` appearances went 11 → 12 and `lure_pattern` 1 → 2 over the 85 queries.
+
+**Recall is measured against a skewed pool.** Deduplication narrowed the skew without removing it: `casino` went from 406 of 675 retrievable (60%) to 356 of 569 (63%), and unclassified from 177 to 134.
 
 ### The ablation — the only test of contribution
 
@@ -163,9 +168,9 @@ A score with no control is not evidence. Two trivial rules, both zero LLM calls:
 | baseline | score | status |
 |---|---|---|
 | `has_link → SCAM` | F1 **0.660** | reported in every eval run |
-| top-6 similarity threshold | accuracy **0.835** | **not reported — should be** |
+| top-6 similarity threshold | accuracy **0.824** (0.835 pre-dedup) | **not reported — should be** |
 
-The second is the real ceiling to beat. A pipeline scoring under ~0.835 accuracy is losing to a dot product with no LLM involved at all.
+The second is the real ceiling to beat. A pipeline scoring under ~0.824 accuracy is losing to a dot product with no LLM involved at all.
 
 ### The distinction to internalize
 

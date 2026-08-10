@@ -216,7 +216,7 @@ curl -s http://altdsidccf.dlsu.edu.ph:32050/api/health
 curl -s http://altdsidccf.dlsu.edu.ph:32050/api/meta
 ```
 
-**`chunk_count` must be 715.** Anything smaller means `KB_PATH` fell back to the fixture — the app still answers plausibly on it, so this check is the only thing that catches it.
+**`chunk_count` must be 609.** Anything smaller means `KB_PATH` fell back to the fixture — the app still answers plausibly on it, so this check is the only thing that catches it.
 
 Then tell the user to open the URL and run **one real analysis end to end**, and to hard-refresh (`Cmd-Shift-R`) first. Health and meta never touch the LLM, so nothing short of a full request proves the deploy.
 

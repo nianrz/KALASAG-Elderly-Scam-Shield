@@ -50,6 +50,25 @@ def test_prefix_eval_leak_is_caught(conn):
     assert results["no_eval_leakage"]["ok"] is False
 
 
+def test_retrievable_near_duplicates_are_caught(conn):
+    base = ("[ BANCO DE ORO ] Your account has been restricted due to unrecognized "
+            "attempts. Failure to verify within {} hours will suspend it. Ref {}")
+    _add_message(conn, "m1", base.format(24, "8891"))
+    _add_message(conn, "m2", base.format(48, "8892"))
+    results = {r["name"]: r for r in run_checks(conn, eval_texts=[])}
+    assert results["no_retrievable_near_duplicates"]["ok"] is False
+
+
+def test_near_duplicates_outside_the_retrievable_pool_are_allowed(conn):
+    # message_examples keeps every row; only retrieval is deduplicated.
+    base = ("[ BANCO DE ORO ] Your account has been restricted due to unrecognized "
+            "attempts. Failure to verify within {} hours will suspend it. Ref {}")
+    _add_message(conn, "m1", base.format(24, "8891"))
+    _add_message(conn, "m2", base.format(48, "8892"), retrievable=0)
+    results = {r["name"]: r for r in run_checks(conn, eval_texts=[])}
+    assert results["no_retrievable_near_duplicates"]["ok"] is True
+
+
 def test_orphaned_chunk_is_caught(conn):
     conn.execute(
         "INSERT INTO kb_chunks VALUES ('c1','t','advisory','ghost','s1','','',NULL)"

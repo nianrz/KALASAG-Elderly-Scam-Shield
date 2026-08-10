@@ -15,6 +15,8 @@ tags: [capstone, kalasag, eval, rag, retrieval, measurement, handoff]
 
 This is a review of whether the eval-set rebalance on `kb-changes` actually improves anything, plus the retrieval-level measurement framework that did not previously exist in the repo. Every number below is from a run on this branch on 2026-08-08. Nothing is estimated.
 
+> **Partly superseded on 2026-08-10.** Near-duplicate deduplication (`kb/dedupe.py`) removed 106 redundant retrieval targets: the pool is now **609 chunks / 569 retrievable**, not 715 / 675. The metrics in §"How to measure the KB and RAG system" were re-run on both pools that day and are kept here as the *before* side of that comparison — recall@6 0.800 → 0.829, recall@10 0.829 → 0.857, distinct messages in top-6 5.376 → 6.000, similarity-alone accuracy 0.835 → 0.824. **The `TOP_K` 6 → 3 recommendation is closed: `TOP_K` stays at 6.** The holdout findings and the merge assessment are unaffected. See `docs/2026-08-10-rag-use-and-optimization.md`.
+
 ---
 
 ## Do this first
@@ -26,7 +28,7 @@ cd /path/to/Elderly-Scam-Shield
 knowledge-base/.venv/bin/python knowledge-base/scripts/build_kb.py
 ```
 
-Expect `kb_chunks: 715`. If you skip this step, two tests fail and pipeline invariant 5 is live-violated. See [The blocker](#the-blocker-the-kb-was-never-rebuilt).
+Expect `kb_chunks: 609` (715 before the 2026-08-10 deduplication). If you skip this step, two tests fail and pipeline invariant 5 is live-violated. See [The blocker](#the-blocker-the-kb-was-never-rebuilt).
 
 ---
 
@@ -112,6 +114,8 @@ For each held-out SCAM with a known `scam_type`, does top-k retrieval surface at
 
 **`recall@3 == recall@6`.** Chunks 4–6 contribute zero additional same-type evidence. `TOP_K = 6` in `backend/app/graph/nodes/retrieve.py` is buying Detector context tokens for nothing. Worth testing 3 — but check the advisory / `brand_rebuttal` path first, since those chunks are rarer and may rely on the wider window (see metric 3).
 
+> **Superseded 2026-08-10.** This plateau was an artefact of near-duplicate templates: slots 4–6 held variants of slots 1–3, and a variant cannot contribute a new `scam_type`. After deduplication, recall@6 is 0.829 against recall@3 at 0.800, so cutting the window would *lose* recall. **`TOP_K` stays at 6.** Do not act on "worth testing 3."
+
 Caveat on this number: the retrievable pool is heavily skewed — 406 of 715 chunks are `casino` and 207 have no `scam_type` at all. 0.800 is measured against that distribution, not a balanced one.
 
 ### 3. Coverage and evidence density
@@ -147,9 +151,9 @@ Recommended: report the similarity baseline alongside `has_link` in every eval r
 1. **Retrieval ablation (~680 calls).** Run the 85-message eval twice — retrieval enabled, then retrieval disabled (empty context) — and compare F1. This is the only test that shows whether the RAG system contributes anything at all, and there is no cheaper substitute. It needs a `--no-retrieval` flag in `run_eval.py` that makes the retrieve node return `{"concepts_en": [], "retrieved": []}` without the LLM hop.
 2. **Add the similarity baseline to `run_eval.py`.** Alongside `baseline_confusion`. Zero marginal cost per run. Pin it in `backend/tests/test_eval.py` the way 0.660 is pinned.
 3. **Document the KB rebuild step.** `qa/TEST-PLAN.md` as a suite precondition, and the deploy preflight in `CLAUDE.md`.
-4. **Investigate `TOP_K` 6 → 3.** Only after 1 and 2, and only with the `advisory` path checked.
+4. ~~**Investigate `TOP_K` 6 → 3.**~~ **Closed 2026-08-10 — `TOP_K` stays at 6.** See the superseded note under metric 2.
 
-Not started: none of the above. This branch is unchanged apart from this document.
+Status as of 2026-08-10: items 1 and 2 not started. Item 3 not started. Item 4 closed. Deduplication, which was not on this list, was done and re-measured — see `docs/2026-08-10-rag-use-and-optimization.md`.
 
 ---
 
@@ -280,5 +284,5 @@ print(f"    accuracy from similarity ALONE: {acc:.3f} at {t:.4f}")
 
 `kb-changes` is sound and fast-forwardable, with two conditions:
 
-1. **The KB must be rebuilt** by whoever merges, and `chunk_count` confirmed as 715 before the next deploy. `docs/DEPLOYMENT.md` and `CLAUDE.md` already expect 715, so a deploy from a stale tree will fail its own preflight check.
+1. **The KB must be rebuilt** by whoever merges, and `chunk_count` confirmed before the next deploy — **609 as of 2026-08-10**, 715 when this was written. `docs/DEPLOYMENT.md` and `CLAUDE.md` assert the current number, so a deploy from a stale tree will fail its own preflight check.
 2. **`knowledge-base/` is Nian's directory** and this branch edits `kb/normalise.py`, `scripts/build_kb.py`, `scripts/verify_kb.py`, `content/lure_patterns.yaml`, and `tests/test_normalise.py`. That crosses the ownership boundary in `CLAUDE.md`. The changes are correct and test-covered, but Nian should see them before merge.

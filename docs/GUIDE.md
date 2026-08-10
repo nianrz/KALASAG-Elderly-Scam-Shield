@@ -447,9 +447,9 @@ falls back to `backend/tests/fixtures/kb_fixture.sqlite` automatically.
 | `reporting_contacts` | 4 | Where a victim actually reports, in priority order (I-ARC 1326 first) |
 | `advisories` | 9 | Full fetched advisory text from brands and government bodies |
 | `message_examples` | 1,571 | The de-duplicated corpus, labelled SCAM/LEGIT and tagged |
-| `kb_chunks` | **715** | The retrieval surface: everything above, flattened, with bilingual keyword fields and an `embedding` BLOB |
+| `kb_chunks` | **609** | The retrieval surface: everything above, flattened, with bilingual keyword fields and an `embedding` BLOB |
 
-**715 is the number to remember.** `GET /api/meta` returns `chunk_count`, and if it comes
+**609 is the number to remember.** `GET /api/meta` returns `chunk_count`, and if it comes
 back much smaller, `KB_PATH` silently fell back to the fixture. The app still answers
 plausibly on the fixture, which is exactly why that check exists — the failure is invisible
 from the UI.
@@ -491,7 +491,7 @@ KB build that got the flags wrong.
 
 ### Embeddings: the KB ships without them, and we add them
 
-`kb_chunks.embedding` is `NULL` for all 715 rows when the KB arrives. Picking an embedding
+`kb_chunks.embedding` is `NULL` for all 609 rows when the KB arrives. Picking an embedding
 provider was not that deliverable's call.
 
 The backend populates it on first load with our local model, **writing to a
@@ -722,7 +722,7 @@ Each chunk is scored by its **best** match across the query set — the redacted
 concept vote independently, and a chunk only needs to match one of them strongly. A mean
 would let four weak concepts drown out one exact hit.
 
-Full scan in numpy, no index. The KB is 715 rows; an ANN index would be complexity in
+Full scan in numpy, no index. The KB is 609 rows; an ANN index would be complexity in
 exchange for microseconds.
 
 ### What RAG deliberately does **not** touch: contacts
@@ -1005,7 +1005,7 @@ seen those exports, and without them `uv` is not on `PATH` at all.
 
 ```bash
 curl http://altdsidccf.dlsu.edu.ph:32050/api/health     # {"status":"ok"}
-curl http://altdsidccf.dlsu.edu.ph:32050/api/meta       # chunk_count MUST be 715
+curl http://altdsidccf.dlsu.edu.ph:32050/api/meta       # chunk_count MUST be 609
 ```
 
 Then open `http://altdsidccf.dlsu.edu.ph:32050` and **run one real analysis end to end**.
@@ -1136,7 +1136,7 @@ Two more that are not on that list but behave like it:
 
 ## 14. Troubleshooting
 
-**`chunk_count` is small (not 715).** `KB_PATH` fell back to the fixture. The KB did not
+**`chunk_count` is small (not 609).** `KB_PATH` fell back to the fixture. The KB did not
 land in the archive, or the directory structure got flattened. The app answers plausibly on
 the fixture, which is why this is checked explicitly — the failure is invisible from the UI.
 

@@ -24,7 +24,27 @@ Two components consume it:
 | `reporting_contacts` | 4 | Where a victim actually reports, in priority order (I-ARC 1326 first). |
 | `advisories` | 9 | Full fetched advisory text from brands and government bodies. |
 | `message_examples` | 1,571 | The de-duplicated corpus, labelled SCAM/LEGIT and tagged. |
-| `kb_chunks` | 715 | The retrieval surface: everything above, flattened, with bilingual keyword fields. Embeddings are **not** populated. |
+| `kb_chunks` | 609 | The retrieval surface: everything above, flattened, with bilingual keyword fields. Embeddings are **not** populated. |
+
+Of `message_examples`, **569 are retrievable**. Three filters withhold the rest,
+and all three are enforced by `verify_kb.py`:
+
+| Filter | Rows withheld | Why |
+|---|---|---|
+| LEGIT-labelled | 844 | the KB is evidence of scams; legit messages are stored as hard negatives and never served |
+| eval-set holdout | 88 | pipeline invariant 5 — retrieving the test measures nothing |
+| fragments under 20 chars | 6 | `"Hello"`, `"getcash!!"` — labelled SCAM upstream, no pattern to match |
+| near-duplicate templates | 106 | see below |
+
+**Near-duplicate deduplication.** The corpus carries template families: 14
+near-identical "earn 500P watching YouTube" messages, 9 `[ BANCO DE ORO ]`
+account-restriction variants. Exact deduplication misses them because they
+differ by an amount, a domain, or a greeting. Left in the pool they waste
+top-k slots — several of the six chunks the Detector sees are variants of one
+message. `kb/dedupe.py` clusters the retrievable pool by Jaccard similarity
+over character shingles (threshold 0.8, measured against this corpus) and
+keeps the longest member of each cluster. 52 clusters, 106 rows withheld.
+Every row stays in `message_examples`; only `retrievable` is withheld.
 
 ## Rebuilding from scratch
 
@@ -136,7 +156,7 @@ contact it backed were both removed rather than ship an unverifiable hotline.
 ## Why there are no embeddings
 
 The embedding provider is unresolved, and picking one is not this deliverable's
-call. `kb_chunks.embedding` is `NULL` for all 715 rows and `scripts/embed.py`
+call. `kb_chunks.embedding` is `NULL` for all 609 rows and `scripts/embed.py`
 is a documented stub. `EMBEDDING_DIM` in `kb/db.py` and `vector(1536)` in
 `schema/001_schema.postgres.sql` are placeholders that must both change to the
 chosen model's dimension. See `HANDOFF-allen.md`.

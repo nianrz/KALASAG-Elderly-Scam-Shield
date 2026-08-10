@@ -15,7 +15,7 @@
   "holdout": {
     "eval_matched": 85,
     "eval_rows": 85,
-    "retrievable_messages": 675,
+    "retrievable_messages": 569,
     "rows_held_out": 88
   },
   "reconciliation": {
@@ -61,7 +61,7 @@
   "table_counts": {
     "advisories": 9,
     "brand_rebuttals": 4,
-    "kb_chunks": 715,
+    "kb_chunks": 609,
     "lure_patterns": 10,
     "message_examples": 1571,
     "reporting_contacts": 4,
