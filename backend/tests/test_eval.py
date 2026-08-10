@@ -67,18 +67,103 @@ class TestMetrics:
         assert m == {"accuracy": 0.0, "precision": 0.0, "recall": 0.0, "f1": 0.0}
 
 
+# One CSV row per Record above, so the baseline has something to score.
+ROWS = [
+    {"gold_label": "SCAM", "has_link": "yes"},
+    {"gold_label": "SCAM", "has_link": "yes"},
+    {"gold_label": "SCAM", "has_link": "no"},
+    {"gold_label": "LEGIT", "has_link": "no"},
+    {"gold_label": "LEGIT", "has_link": "yes"},
+]
+
+
 class TestRender:
     def test_markdown_contains_all_sections_and_rows(self):
-        report = run_eval.render_markdown(RECORDS, "fake:model", 0.70)
+        report = run_eval.render_markdown(RECORDS, ROWS, "fake:model", 0.70)
         assert "# Eval — fake:model" in report
         assert "## Confusion matrix" in report
+        assert "## Baseline — has_link → SCAM" in report
         assert "## Threshold sweep" in report
         assert report.count("| M000 |") == len(RECORDS)
         for t in run_eval.SWEEP:
             assert f"| {t:.2f} |" in report
 
     def test_sweep_reflect_counts_are_monotonic(self):
-        report_lines = run_eval.render_markdown(RECORDS, "fake:model", 0.70).splitlines()
+        report_lines = run_eval.render_markdown(RECORDS, ROWS, "fake:model", 0.70).splitlines()
         sweep_rows = [l for l in report_lines if any(l.startswith(f"| {t:.2f} |") for t in run_eval.SWEEP)]
         reflected = [int(row.split("|")[2]) for row in sweep_rows]
         assert reflected == sorted(reflected)
+
+    def test_report_records_the_output_language(self):
+        assert "- Output language: en" in run_eval.render_markdown(
+            RECORDS, ROWS, "fake:model", 0.70, "en")
+
+
+class TestBaseline:
+    def test_uses_the_hand_assigned_has_link_column(self):
+        rows = [
+            {"gold_label": "SCAM", "has_link": "yes"},
+            {"gold_label": "SCAM", "has_link": "no"},
+            {"gold_label": "LEGIT", "has_link": "yes"},
+            {"gold_label": "LEGIT", "has_link": "no"},
+        ]
+        assert run_eval.baseline_confusion(rows) == {"tp": 1, "fn": 1, "fp": 1, "tn": 1}
+
+    def test_is_case_and_whitespace_insensitive(self):
+        rows = [{"gold_label": "SCAM", "has_link": " Yes "}]
+        assert run_eval.baseline_confusion(rows)["tp"] == 1
+
+    def test_old_composition_was_near_perfect(self):
+        """The defect the rebalance fixes: 32 link / 1 none / 0 / 18 was F1 0.985."""
+        rows = (
+            [{"gold_label": "SCAM", "has_link": "yes"}] * 32
+            + [{"gold_label": "SCAM", "has_link": "no"}] * 1
+            + [{"gold_label": "LEGIT", "has_link": "no"}] * 18
+        )
+        f1 = run_eval.metrics(run_eval.baseline_confusion(rows))["f1"]
+        assert abs(f1 - 0.985) < 0.01
+
+    def test_rebalanced_composition_is_weak(self):
+        rows = (
+            [{"gold_label": "SCAM", "has_link": "yes"}] * 32
+            + [{"gold_label": "SCAM", "has_link": "no"}] * 13
+            + [{"gold_label": "LEGIT", "has_link": "yes"}] * 20
+            + [{"gold_label": "LEGIT", "has_link": "no"}] * 20
+        )
+        f1 = run_eval.metrics(run_eval.baseline_confusion(rows))["f1"]
+        assert abs(f1 - 0.660) < 0.01
+
+
+class TestResultFilename:
+    def test_language_distinguishes_the_output_file(self):
+        model = "bedrock_converse:global.anthropic.claude-sonnet-5"
+        tl = run_eval.result_filename(model, "tl")
+        en = run_eval.result_filename(model, "en")
+        assert tl != en
+        assert en.endswith("-en.md")
+        assert ":" not in tl and "/" not in tl
+
+
+class TestEvalSet:
+    """Guards the composition the rebalance produced."""
+
+    def _rows(self):
+        import csv
+        with open(run_eval.EVAL_CSV, encoding="utf-8", newline="") as fh:
+            return list(csv.DictReader(fh))
+
+    def test_has_eighty_five_unique_messages(self):
+        rows = self._rows()
+        assert len(rows) == 85
+        assert len({r["text"].strip().lower() for r in rows}) == 85
+
+    def test_every_row_is_annotated(self):
+        for r in self._rows():
+            assert r["has_link"] in ("yes", "no"), r["id"]
+            assert r["hardness"] in ("easy", "hard"), r["id"]
+            assert r["notes_for_lui"].strip(), r["id"]
+
+    def test_link_no_longer_predicts_the_label(self):
+        """The whole point. A materially higher F1 means the set drifted."""
+        f1 = run_eval.metrics(run_eval.baseline_confusion(self._rows()))["f1"]
+        assert abs(f1 - 0.660) < 0.05, f"baseline drifted to {f1:.3f}"

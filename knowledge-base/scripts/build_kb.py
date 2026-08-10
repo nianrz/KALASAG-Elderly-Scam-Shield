@@ -27,6 +27,7 @@ from kb.content import (  # noqa: E402
     validate_content,
 )
 from kb.dataset import fetch_dataset, load_rows, reconcile, usable_rows  # noqa: E402
+from kb.dedupe import redundant_ids  # noqa: E402
 from kb.db import TABLE_ORDER, create_schema, emit_postgres_seed, insert_rows  # noqa: E402
 from kb.normalise import holdout_index, is_held_out, normalise_text  # noqa: E402
 from kb.tagging import classify_scam_type, count_taglish_markers, detect_brand, has_url  # noqa: E402
@@ -36,9 +37,15 @@ import csv  # noqa: E402
 CORPUS_SOURCE_ID = "scottleechua-ph-sms"
 LEGIT_CATEGORIES = {"ads", "gov", "notifs"}
 
+# Corpus rows shorter than this are fragments — "Hello", "getcash!!",
+# "001204649" — labelled SCAM upstream but carrying no pattern to match.
+# As retrieval targets they are noise, so they are excluded regardless of
+# label. They stay in message_examples; only retrievable is withheld.
+MIN_RETRIEVABLE_LEN = 20
+
 
 def load_eval_texts() -> list[str]:
-    path = REPO / "eval-set-candidate-55.csv"
+    path = REPO / "eval-set.csv"
     with open(path, encoding="utf-8", newline="") as handle:
         return [r["text"] for r in csv.DictReader(handle)]
 
@@ -63,11 +70,22 @@ def build_message_rows(rows: list[dict], eval_norms: list[str]) -> list[dict]:
             "brand_tag": detect_brand(row["text"]),
             "has_url": int(has_url(row["text"])),
             "taglish_markers": count_taglish_markers(row["text"]),
-            "retrievable": int(label == "SCAM" and not held),
+            "retrievable": int(
+                label == "SCAM" and not held and len(row["text"].strip()) >= MIN_RETRIEVABLE_LEN
+            ),
             "eval_holdout": int(held),
             "date_received": row.get("date-received"),
             "source_id": CORPUS_SOURCE_ID,
         })
+
+    # Template families survive exact deduplication above — they differ by an
+    # amount, a domain, or a greeting. Left in, several top-k slots go to
+    # variants of one message. Only the retrievable pool is deduplicated;
+    # message_examples keeps every row.
+    retrievable = [(m["message_id"], m["text"]) for m in messages if m["retrievable"]]
+    for message_id in redundant_ids(retrievable):
+        next(m for m in messages if m["message_id"] == message_id)["retrievable"] = 0
+
     return messages
 
 

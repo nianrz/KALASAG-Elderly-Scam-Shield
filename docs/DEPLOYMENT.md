@@ -345,7 +345,7 @@ curl http://altdsidccf.dlsu.edu.ph:32050/api/meta
 # kb_freshness, model_id, chunk_count — confirms it opened the real KB
 ```
 
-**`chunk_count` must be 732.** That is the real KB. A much smaller number means
+**`chunk_count` must be 609.** That is the real KB. A much smaller number means
 `KB_PATH` fell back to `backend/tests/fixtures/kb_fixture.sqlite` and step 3 did not
 land the database. The app will still answer plausibly on the fixture, which is why
 this check exists — the failure is invisible from the UI.

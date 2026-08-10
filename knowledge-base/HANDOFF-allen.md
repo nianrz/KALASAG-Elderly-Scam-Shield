@@ -23,11 +23,13 @@ and gated by `scripts/verify_kb.py` (8/8 checks passing, exit 0).
 | `reporting_contacts` | 4 | Where a victim reports, in priority order. I-ARC 1326 is priority 1. |
 | `advisories` | 9 | Full fetched advisory text from brands and government bodies. |
 | `message_examples` | 1,571 | De-duplicated corpus, labelled SCAM/LEGIT, tagged with scam type, brand, URL presence, and Taglish marker count. |
-| `kb_chunks` | 732 | The retrieval surface. Everything above flattened into text + `keywords_en` / `keywords_tl`. `embedding` is NULL on every row. |
+| `kb_chunks` | 609 | The retrieval surface. Everything above flattened into text + `keywords_en` / `keywords_tl`. `embedding` is NULL on every row. |
 
-Of `message_examples`: 727 SCAM, 844 LEGIT. **692 are retrievable** — only
-SCAM-labelled, non-held-out rows. The 844 hard negatives are stored for
-evaluation and are never served.
+Of `message_examples`: 727 SCAM, 844 LEGIT. **569 are retrievable** — SCAM-labelled
+rows that are not held out for the eval set, not fragments under 20 characters, and
+not near-duplicate variants of another retrievable message. The 844 hard negatives
+are stored for evaluation and are never served. See `README.md` for the filter
+breakdown.
 
 Chunk breakdown: 692 message examples, 26 advisory chunks, 10 lure patterns,
 4 brand rebuttals.
@@ -89,7 +91,7 @@ Two places must change together, to the same number:
 1536 is a **placeholder**, not a recommendation. Set both to your chosen
 model's dimension, then implement `embed_batch(texts) -> list[list[float]]` in
 `knowledge-base/scripts/embed.py` and run it. Right now it reports
-"732 chunks awaiting embeddings" and exits 0 without doing anything, which is
+"609 chunks awaiting embeddings" and exits 0 without doing anything, which is
 the intended state.
 
 ---

@@ -128,7 +128,7 @@ ADVISORIES = [
      None, "en", "bdo-fraud-advisory"),
 ]
 
-# Paraphrased corpus templates. None of these matches eval-set-candidate-55.csv.
+# Paraphrased corpus templates. None of these matches eval-set.csv.
 MESSAGE_EXAMPLES = [
     ("fx-msg-001",
      "BDO ALERT Your online access is suspended. Reactivate here bdo-verify.xyz/login",

@@ -72,7 +72,7 @@ backend/
     test_config.py test_llm.py test_preprocess.py
     test_retrieval.py test_graph.py test_api.py
   eval/
-    run_eval.py       55-message eval + threshold sweep
+    run_eval.py       85-message eval + baseline + threshold sweep
     results/
 frontend/
   vite.config.ts      vite + tailwind + vitest config in one file
@@ -95,7 +95,7 @@ qa/                   QA workspace — own package.json, own node_modules
     fixtures/         meta.json + one per verdict
     support/          e2e.ts · commands.ts
 knowledge-base/       Nian's subtree — read-only to us
-eval-set-candidate-55.csv
+eval-set.csv
 ```
 
 `app/graph/` holds control flow, `app/retrieval/` holds data access, `app/prompts/` holds product logic. A node function should be readable end to end without opening another file.
@@ -317,8 +317,9 @@ The default Cypress viewport is 390×844 because the elderly user is on a phone;
 
 ## Evaluation
 
-`eval/run_eval.py` runs all 55 gold-labelled messages through the full pipeline with the reflection threshold forced to 0.95, so nearly every message produces both a first and a second pass. That is what makes the sweep computable from a single run: verdict(t) = second-pass verdict where first-pass confidence < t, else first-pass verdict — `first_verdict`/`first_confidence` in graph state exist for this. Gold labels are binary; SCAM and LIKELY_SCAM count as SCAM, and UNCLEAR counts against the scam class — the conservative mapping, since an UNCLEAR on a real scam is a miss the user pays for. It emits:
+`eval/run_eval.py` runs all 85 gold-labelled messages through the full pipeline with the reflection threshold forced to 0.95, so nearly every message produces both a first and a second pass. That is what makes the sweep computable from a single run: verdict(t) = second-pass verdict where first-pass confidence < t, else first-pass verdict — `first_verdict`/`first_confidence` in graph state exist for this. Gold labels are binary; SCAM and LIKELY_SCAM count as SCAM, and UNCLEAR counts against the scam class — the conservative mapping, since an UNCLEAR on a real scam is a miss the user pays for. It emits:
 
+- A `has_link → SCAM` baseline, computed from the hand-assigned `has_link` column at zero LLM cost. Reported above the pipeline metrics because a result with no control is not evidence: on the pre-rebalance set that rule scored F1 0.985.
 - Confusion matrix against `gold_label`.
 - Accuracy, precision, recall, F1.
 - A threshold sweep from 0.50 to 0.95 in 0.05 steps, showing how many messages would reflect and what accuracy results.
@@ -328,7 +329,7 @@ Output is markdown, written to `eval/results/`, and pasted into the deck.
 
 Running it twice under different `LLM_MODEL` values is the model bake-off. That answers "how did you choose your model" with measurements instead of a spec-sheet comparison, and it satisfies the mentor's framing that the binding constraint is access, not capability.
 
-**Honest framing for the deck:** the threshold is calibrated on the same 55 messages we report accuracy on. That is fitting to the test set. We say so rather than presenting it as held-out accuracy.
+**Honest framing for the deck:** the threshold is calibrated on the same 85 messages we report accuracy on. That is fitting to the test set. We say so rather than presenting it as held-out accuracy. The set is also deliberately stratified toward hard cases, so its F1 discriminates between systems and is not an estimate of field accuracy.
 
 ## Risks
 
