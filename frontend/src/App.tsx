@@ -20,26 +20,11 @@ function storedLanguage(): Language {
   return localStorage.getItem(LANG_KEY) === 'en' ? 'en' : 'tl'
 }
 
-// Crested shield with a gold check, per the Figma mark. Kept in sync by hand
-// with public/favicon.svg, which needs literal hexes rather than the theme
-// variables — a browser renders a favicon outside the document.
+// The mark is James's exported asset, and public/kalasag-mark.svg is also the
+// favicon — one file for both, so the tab icon cannot drift from the header.
+// Decorative: the wordmark beside it already says "Kalasag".
 function ShieldMark() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-9 w-9" aria-hidden="true">
-      <path
-        d="M4 2.4 8.2 6.2 12 2.4l3.8 3.8L20 2.4v9.3c0 5.1-3.2 9.2-8 10.9-4.8-1.7-8-5.8-8-10.9V2.4Z"
-        fill="var(--color-shield)"
-      />
-      <path
-        d="m8 12.6 2.9 2.9 5.4-6"
-        fill="none"
-        stroke="var(--color-gold)"
-        strokeWidth="2.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
+  return <img src="/kalasag-mark.svg" alt="" aria-hidden="true" className="h-11 w-auto" />
 }
 
 export default function App() {
@@ -89,7 +74,7 @@ export default function App() {
       <header className="flex items-center justify-between gap-4 py-5">
         <div className="flex items-center gap-2.5">
           <ShieldMark />
-          <h1 className="font-display text-3xl font-bold text-shield-deep">
+          <h1 className="font-wordmark text-3xl font-bold text-shield-deep">
             {t(language, 'app.title')}
           </h1>
         </div>
@@ -109,7 +94,7 @@ export default function App() {
 
       {phase !== 'result' && (
         <main>
-          <p className="mb-4 text-center font-display text-xl text-ink">
+          <p className="mb-4 text-center text-xl text-ink">
             {t(language, 'app.tagline')}
           </p>
           <InputPanel

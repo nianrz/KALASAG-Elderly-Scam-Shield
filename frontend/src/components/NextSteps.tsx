@@ -12,7 +12,7 @@ interface Props {
 export function NextSteps({ steps, contacts, language }: Props) {
   return (
     <section data-testid="next-steps" aria-label={t(language, 'result.steps')}>
-      <h3 className="font-display text-2xl font-bold text-shield-deep">
+      <h3 className="text-2xl font-bold text-shield-deep">
         {t(language, 'result.steps')}
       </h3>
       <ol className="mt-3 space-y-3">

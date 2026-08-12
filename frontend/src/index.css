@@ -1,14 +1,14 @@
-@import '@fontsource/atkinson-hyperlegible/400.css';
-@import '@fontsource/atkinson-hyperlegible/700.css';
-@import '@fontsource/fraunces/600.css';
-@import '@fontsource/fraunces/700.css';
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/700.css';
+@import '@fontsource/inria-serif/700.css';
 @import 'tailwindcss';
 
 /*
  * Kalasag — warm paper-and-ink, not tech dashboard.
- * Atkinson Hyperlegible is designed for low-vision readers; that choice IS
- * the design. Verdict treatments are fixed by docs/DESIGN.md — LIKELY_LEGIT
- * is deliberately blue, never green.
+ * Inter carries every word in the interface; Inria Serif is reserved for the
+ * Kalasag wordmark and used nowhere else, so `font-wordmark` appears exactly
+ * once in the codebase. Verdict treatments are fixed by docs/DESIGN.md —
+ * LIKELY_LEGIT is deliberately blue, never green.
  *
  * The blues are the saturated indigo of the Figma redesign (2026-08-11), not
  * the earlier muted navy: on a warm cream page a desaturated blue reads as
@@ -19,8 +19,8 @@
  */
 
 @theme {
-  --font-sans: 'Atkinson Hyperlegible', system-ui, sans-serif;
-  --font-display: 'Fraunces', Georgia, serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-wordmark: 'Inria Serif', Georgia, serif;
 
   --color-paper: #f7efe7;
   --color-paper-deep: #efe4d7;

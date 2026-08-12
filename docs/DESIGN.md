@@ -31,7 +31,7 @@ Non-negotiable. These are requirement N2 and a stated capstone objective.
 
 ## Visual identity
 
-**Revised 2026-08-11 (Allen) to match the Figma prototype.** The palette lives in `@theme` in `frontend/src/index.css`; nothing hard-codes a hex outside it, except `public/favicon.svg`, which a browser renders outside the document and so cannot read the variables.
+**Revised 2026-08-11 (Allen) to match the Figma prototype; typography and mark revised 2026-08-12.** The palette lives in `@theme` in `frontend/src/index.css` and nothing hard-codes a hex outside it.
 
 | Token | Value | Used for |
 |---|---|---|
@@ -45,7 +45,11 @@ Non-negotiable. These are requirement N2 and a stated capstone objective.
 
 The blues are a saturated indigo, not the muted navy they replaced: on a warm cream page a desaturated blue reads as grey, and the submit button has to be unmistakably the only primary action. Every pair clears the contrast rule above — white on `shield` is 10.6:1, `shield-bright` on paper 6.3:1, white on `scam` (`#c62b1c`) 5.6:1.
 
-**Logo:** a crested shield with a gold check — `ShieldMark()` in `App.tsx` and `public/favicon.svg`, the same two paths in both. Edit both or the tab icon drifts from the header.
+**Type:** two faces, and the split is a rule. **Inria Serif 700** sets the `Kalasag` wordmark and nothing else — it is exposed as `font-wordmark`, which appears exactly once in the codebase. **Inter 400/700** sets every other word in the interface, including the verdict headline and the section headings that were previously serif.
+
+This replaced Atkinson Hyperlegible on 2026-08-12 at James's direction, and it is a real trade to record: Atkinson was chosen *because* it disambiguates the glyph pairs low-vision readers confuse — `0`/`O`, `1`/`l`/`I` — which matters in a tool that renders hotline numbers and URLs. Inter does not do that. It keeps the properties the accessibility table actually specifies (a tall x-height at 19px/1.65, and every contrast pair unchanged), so no rule above is broken, but if a user ever misreads a hotline digit, this is the first thing to look at. The mitigation already in place: contacts render at `text-xl` bold, larger than body copy.
+
+**Logo:** `public/kalasag-mark.svg` — James's exported kalasag with a white check. **One file serves both the header and the favicon**, so the tab icon cannot drift from the header the way it did when the two were separate paths. It is a raster embedded in an SVG wrapper: 107 × 178 source against a 44px render, so it is sharp at header size and in the tab, but it will soften if anyone scales it past roughly 60px for a slide or a poster. Redraw it as true paths before using it large.
 
 **The input column is centre-aligned; the result is not.** Tagline, prompt, validation messages, privacy note, freshness date and the error card's message and retry button all centre on the input screen, which is a short symmetrical column and reads as one calm block. Result content stays left-aligned: it is prose and lists, and centred body copy gives a ragged left edge that a low-vision reader has to hunt for on every line.
 

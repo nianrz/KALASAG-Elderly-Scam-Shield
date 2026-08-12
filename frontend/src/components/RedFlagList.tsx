@@ -12,7 +12,7 @@ export function RedFlagList({ flags, language }: Props) {
   if (flags.length === 0) return null
   return (
     <section data-testid="red-flags" aria-label={t(language, 'result.why')}>
-      <h3 className="font-display text-2xl font-bold text-shield-deep">
+      <h3 className="text-2xl font-bold text-shield-deep">
         {t(language, 'result.why')}
       </h3>
       <ul className="mt-3 space-y-4">

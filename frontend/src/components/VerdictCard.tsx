@@ -59,7 +59,7 @@ export function VerdictCard({ verdict, language }: Props) {
         <span data-testid="verdict-icon" className="flex">
           <VerdictIcon kind={icon} />
         </span>
-        <h2 className="font-display text-[2.1rem] leading-tight font-bold tracking-wide">
+        <h2 className="text-[2.1rem] leading-tight font-bold tracking-wide">
           {t(language, `verdict.${verdict}.headline`)}
         </h2>
       </div>
