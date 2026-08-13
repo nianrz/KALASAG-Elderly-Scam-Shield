@@ -8,6 +8,7 @@ import { ErrorState } from './components/ErrorState'
 import { InputPanel } from './components/InputPanel'
 import { LanguageToggle } from './components/LanguageToggle'
 import { NextSteps } from './components/NextSteps'
+import { PipelineTrace } from './components/PipelineTrace'
 import { RedFlagList } from './components/RedFlagList'
 import { SimilarScams } from './components/SimilarScams'
 import { VerdictCard } from './components/VerdictCard'
@@ -144,6 +145,7 @@ export default function App() {
               redactions={result.redactions}
               language={language}
             />
+            <PipelineTrace result={result} language={language} />
           </div>
           <p data-testid="uncertainty" className="border-t-2 border-line pt-4 text-ink-soft">
             {t(language, 'result.uncertainty')}
