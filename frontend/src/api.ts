@@ -17,6 +17,12 @@ export interface SimilarScam {
   scam_type: string | null
 }
 
+export interface RetrievedChunk {
+  chunk_id: string
+  parent_type: string
+  scam_type: string | null
+}
+
 export interface AnalyzeResponse {
   verdict: Verdict
   confidence: number
@@ -29,6 +35,9 @@ export interface AnalyzeResponse {
   next_steps: string[]
   contacts: Contact[]
   similar_scams: SimilarScam[]
+  concepts_en: string[]
+  retrieved: RetrievedChunk[]
+  low_confidence_reason: string | null
   kb_freshness: string
   model_id: string
 }
