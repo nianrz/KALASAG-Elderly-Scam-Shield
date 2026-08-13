@@ -25,7 +25,7 @@ function StageHeading({
   badge: string
 }) {
   return (
-    <h4 className="flex items-center gap-2 font-bold text-shield-deep">
+    <h4 className="flex flex-wrap items-center gap-2 font-bold text-shield-deep">
       <span
         aria-hidden="true"
         className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-shield font-bold text-white"
@@ -90,7 +90,7 @@ export function PipelineTrace({ result, language }: Props) {
                 {result.concepts_en.map((concept) => (
                   <li
                     key={concept}
-                    className="rounded-md bg-paper-deep px-2 py-0.5 break-words"
+                    className="rounded-md bg-paper-deep px-2 py-0.5 wrap-anywhere"
                   >
                     {concept}
                   </li>
@@ -103,7 +103,7 @@ export function PipelineTrace({ result, language }: Props) {
           <p className="mt-2">{t(language, 'trace.matched', { n: result.retrieved.length })}</p>
           <ul data-testid="trace-chunks" className="mt-1 list-disc pl-6">
             {result.retrieved.map((chunk) => (
-              <li key={chunk.chunk_id} className="break-all">
+              <li key={chunk.chunk_id} className="wrap-anywhere">
                 {chunk.chunk_id}
                 <span className="text-ink-soft"> — {chunk.parent_type}</span>
               </li>
@@ -134,7 +134,7 @@ export function PipelineTrace({ result, language }: Props) {
             </p>
           )}
           {citedChunkIds.length > 0 ? (
-            <p className="break-all">
+            <p className="wrap-anywhere">
               {t(language, 'trace.citedBy')} {citedChunkIds.join(', ')}
             </p>
           ) : (
