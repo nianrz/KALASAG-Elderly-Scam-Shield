@@ -262,10 +262,18 @@ The `embedding` column ships unpopulated. We populate it with our local model on
     { "organisation": "I-ARC", "hotline": "1326", "url": "https://www.cybersecurity.ph/cybercrime-reporting/" }
   ],
   "similar_scams": [{ "text": "...", "scam_type": "bank-impersonation" }],
+  "concepts_en": ["impersonates BDO", "account hold threat", "urgency deadline"],
+  "retrieved": [
+    { "chunk_id": "msg00412", "parent_type": "message_example", "scam_type": "bank-impersonation" },
+    { "chunk_id": "lure-account-suspended", "parent_type": "lure_pattern", "scam_type": "bank-impersonation" }
+  ],
+  "low_confidence_reason": null,
   "kb_freshness": "2026-08-06",
   "model_id": "bedrock_converse:global.anthropic.claude-sonnet-5"
 }
 ```
+
+`concepts_en`, `retrieved` and `low_confidence_reason` carry the retrieval and detection provenance so the UI can render the trace panel — chunk *text* is deliberately not duplicated onto `retrieved`, because `similar_scams` already carries the retrieved message-example texts.
 
 `GET /api/health` → liveness. `GET /api/meta` → `kb_freshness`, `model_id`, chunk count. The frontend calls `/api/meta` once at load for the freshness badge.
 

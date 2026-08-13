@@ -154,6 +154,12 @@ Colour is never the only signal. Each verdict carries an icon, a word, and a dis
 
 **Confidence is not shown as a number.** A "68% confident" badge invites a user to reason about a self-reported score that is not calibrated for that purpose. Low confidence is expressed by the `UNCLEAR` verdict and by the wording, which is the honest surface.
 
+### The trace panel is the one exception to the confidence rule
+
+The primary result area still never shows a confidence number — that rule is unchanged. The `PipelineTrace` panel does show it, as `Confidence: 0.91`, in its Detect stage. The reason for hiding the number is that an uncalibrated score confuses a stressed elderly reader; that reason does not apply inside a panel someone must deliberately open, and the number is what makes the Detect stage legible to a caregiver or an evaluator asking "how sure was it?". The narrower rule is enforced by `never displays the model confidence outside the trace panel` in `qa/cypress/e2e/analyse/verdict-variants.cy.ts`, which asserts the value is absent from the verdict, next-steps and uncertainty surfaces and visible only after a click on the trace summary.
+
+**Known rough edge:** the trace displays the Detector's `low_confidence_reason` verbatim, and its language is not guaranteed — `detect.md` specifies the output language for red-flag labels and details but is silent on this field, so it can come back in English on a Tagalog analysis. Tightening the prompt is deliberately out of scope for the trace change, because any prompt edit requires a full eval re-run.
+
 ## Components
 
 | Component | Responsibility |
@@ -166,6 +172,7 @@ Colour is never the only signal. Each verdict carries an icon, a word, and a dis
 | `RedFlagList` | Bulleted; each flag is a bold label plus a plain-language detail line. |
 | `SimilarScams` | Collapsed `<details>`. Corpus examples, plain text, links inert. |
 | `AnalysedMessage` | Collapsed `<details>`. Shows the message as the pipeline analysed it — the API's `redacted_text`, where removed values appear as `[OTP]`-style labels — plus a list of what was removed. Never the raw input, and rendered as plain text so links stay inert. |
+| `PipelineTrace` | Collapsed `<details>`, closed by default, at the bottom of the details cluster. Shows what each of the four pipeline stages did for this analysis — Preprocess, Retrieve, Detect, Advise — with chunk IDs, the extracted search concepts, the confidence, and the model's stated doubt. Written for the caregiver and the demo, not the elderly user, who must never meet it by accident. Chunk IDs only, never chunk text — `SimilarScams` already carries the text. |
 | `ContactList` | Rendered inside `NextSteps`, not standalone. Numbers come from the API verbatim. |
 | `ErrorState` | Plain-language failure plus a retry button. Never shows a stack trace or the submitted text. |
 
@@ -209,6 +216,33 @@ Every string exists in both languages in `src/i18n.ts`. English is written for t
 | `input.lengthWarning` | This message is very long. Only the first part will be analysed. | Napakahaba po ng mensahe. Ang unang bahagi lang ang masusuri. |
 | `kb.warning` | The scam database is unavailable right now. Analysis may be less accurate. | Hindi ma-access ang scam database ngayon. Maaaring hindi gaanong tumpak ang pagsusuri. |
 | `result.redactionNote` | We removed these before analysing: | Inalis namin ito bago suriin: |
+| `trace.summary` | How this was analysed | Paano ito sinuri |
+| `trace.llm` | AI step | AI |
+| `trace.noLlm` | no AI | walang AI |
+| `trace.preprocess` | Preprocess | Paghahanda |
+| `trace.preprocessDetail` | Read the message, worked out what kind it is, and removed sensitive values. | Binasa ang mensahe, tiningnan kung anong klase, at inalis ang mga sensitibong detalye. |
+| `trace.type` | Type: {type} | Klase: {type} |
+| `trace.removed` | Removed: {labels} | Inalis: {labels} |
+| `trace.removedNone` | Nothing sensitive found. | Walang sensitibong nakita. |
+| `trace.retrieve` | Retrieve | Paghahanap |
+| `trace.retrieveDetail` | Turned the message into English search concepts, then searched the knowledge base. | Ginawang English na concepts ang mensahe, tapos hinanap sa knowledge base. |
+| `trace.concepts` | Searched for: | Hinanap: |
+| `trace.conceptsNone` | No concepts were extracted; searched with the message text alone. | Walang na-extract na concepts; ang mensahe lang ang ginamit sa paghahanap. |
+| `trace.matched` | Matched {n} knowledge-base entries: | {n} tugma sa knowledge base: |
+| `trace.detect` | Detect | Pagsusuri |
+| `trace.detectDetail` | Weighed the message against those entries and gave a verdict. | Tinimbang ang mensahe laban sa mga entry na iyon at nagbigay ng hatol. |
+| `trace.confidence` | Confidence: {value} | Confidence: {value} |
+| `trace.reflected` | Ran a second look because confidence was below the threshold. | May pangalawang tingin dahil mababa ang confidence. |
+| `trace.notReflected` | Confident enough on the first pass — no second look needed. | Sapat na ang unang tingin — hindi na kailangan ng pangalawa. |
+| `trace.doubt` | Stated doubt: | Sinabing duda: |
+| `trace.citedBy` | Red flags cite: | Ang mga red flag ay galing sa: |
+| `trace.citedNone` | No red flag cited a knowledge-base entry. | Walang red flag na may pinanggalingang entry. |
+| `trace.advise` | Advise | Payo |
+| `trace.adviseDetail` | Wrote the explanation and next steps. Hotlines were looked up by name, never generated. | Isinulat ang paliwanag at mga susunod na hakbang. Ang mga hotline ay hinanap sa listahan, hindi ginawa-gawa. |
+| `trace.contactsFrom` | Contacts looked up: | Mga contact na hinanap: |
+| `trace.privacyNote` | Only the redacted message reaches the AI. The original is never saved or logged. | Ang na-redact na mensahe lang ang umaabot sa AI. Hindi sine-save o nilo-log ang orihinal. |
+
+`trace.privacyNote` is worded precisely and must not be loosened: the raw text *does* leave the browser — redaction happens server-side in `preprocess.py`. What is true is that only redacted text reaches the model and nothing raw is stored or logged. Never write "never leaves your device".
 
 Analysing step labels (`analysing.1`–`analysing.4`) follow the sequence in § Analysing, in both languages. Verdict headlines and subtitles (`verdict.*`) follow the § Verdict visual language table.
 

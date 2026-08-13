@@ -44,14 +44,17 @@ One file per feature. A failing spec names the broken feature in its filename.
 | Spec | Feature | Key assertions |
 |---|---|---|
 | `analyse/verdict-scam.cy.ts` | The SCAM path | Verdict leads; icon + word, not colour alone; steps precede explanation; uncertainty line present; **no clickable link from the message** |
-| `analyse/verdict-variants.cy.ts` | All four verdicts | Distinct headline each; uncertainty line on every one; **`LIKELY_LEGIT` is not green**; the model's confidence value never renders (the static "100%" in the uncertainty copy is DESIGN.md wording, not a confidence readout) |
+| `analyse/verdict-variants.cy.ts` | All four verdicts | Distinct headline each; uncertainty line on every one; **`LIKELY_LEGIT` is not green**; the model's confidence value never renders on the verdict, next-steps or uncertainty surfaces, and only becomes visible behind the trace panel's summary click (the static "100%" in the uncertainty copy is DESIGN.md wording, not a confidence readout) |
+| `analyse/pipeline-trace.cy.ts` | The trace panel | Present but **closed by default**; four stages on open; concepts and every retrieved chunk ID visible; stated-doubt line on `UNCLEAR` and absent on `SCAM`; both languages; **raw OTP digits never render anywhere in the result** |
 | `analyse/next-steps.cy.ts` | Steps and contacts | Ordered list; **hotline matches the API byte for byte**; official numbers are `tel:` links |
 | `analyse/red-flags.cy.ts` | Flags and collapsibles | Label + detail per flag; sections collapsed by default; empty sections omitted, not shown empty; no fabricated filler flag |
 | `language/toggle.cy.ts` | EN/TL toggle | Segmented control not dropdown; copy switches; `<html lang>` follows; language reaches the API; persists across reload; **absent on the result screen**, back after reset |
 | `privacy/redaction.cy.ts` | PII handling | Privacy note before submit; **redacted value never rendered back**; freshness date shown |
 | `errors/error-states.cy.ts` | Failure paths | Empty submit; network failure; **no stack trace or submitted text in errors**; long-input warning not silent truncation; KB-unavailable still shows a verdict |
-| `a11y/accessibility.cy.ts` | `DESIGN.md` rules | 18px body; 44px tap targets; keyboard-only run; visible focus; no h-scroll at 320px or 200% zoom; verdict announced via `role="status"` |
+| `a11y/accessibility.cy.ts` | `DESIGN.md` rules | 18px body; 44px tap targets; keyboard-only run; visible focus; no h-scroll at 320px or 200% zoom; no h-scroll with the trace panel open at 320px (the trace stays within the viewport at zoom too — the whole-document zoom check covers only the input screen, because the result screen's header wordmark and verdict headline already overflow at zoom, a pre-existing issue unrelated to the trace); verdict announced via `role="status"` |
 | `smoke/live-pipeline.cy.ts` | Contract | Real analysis returns SCAM/LIKELY_SCAM; **response has every documented key**; confidence within 0–1 |
+
+**The confidence assertion in `verdict-variants.cy.ts` was deliberately narrowed** when the trace panel landed. It used to assert the confidence value appears nowhere in `[data-testid="result"]`; the trace panel now legitimately shows the number inside that container (`DESIGN.md § The trace panel is the one exception to the confidence rule`), so the assertion targets the primary surfaces — verdict, next steps, uncertainty line — and a second test asserts the number sits behind a deliberate click. Do not restore the old whole-result assertion; it would fail for the documented exception, not for a regression.
 
 ## Running
 
