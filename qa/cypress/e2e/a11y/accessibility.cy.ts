@@ -51,6 +51,33 @@ describe('Accessibility', () => {
     })
   })
 
+  it('does not scroll horizontally with the trace panel open at 320px', () => {
+    // Chunk IDs in the trace are long unbroken strings — the overflow risk
+    // the other viewport tests cannot see, because they never open the panel.
+    cy.viewport(320, 700)
+    cy.analyse('BDO ALERT: Your account is on hold.')
+    cy.wait('@analyze')
+    cy.get('[data-testid="pipeline-trace"] summary').click()
+    cy.get('[data-testid="trace-stage"]').should('have.length', 4)
+    cy.document().then((doc) => {
+      expect(doc.documentElement.scrollWidth).to.be.at.most(doc.documentElement.clientWidth + 1)
+    })
+    // At 200% zoom the assertion is scoped to the panel: the result screen
+    // already overflows at zoom before this feature existed (the header
+    // wordmark and the verdict headline are the offenders), so a document-
+    // level check would fail on those, not on the trace. The trace must not
+    // add to that: nothing in it may extend past the viewport.
+    cy.get('html').invoke('css', 'font-size', '36px')
+    cy.get('[data-testid="pipeline-trace"]').then(($panel) => {
+      const panel = $panel[0]
+      const viewport = panel.ownerDocument.documentElement.clientWidth
+      expect(panel.getBoundingClientRect().right, 'trace panel right edge').to.be.at.most(viewport + 1)
+      panel.querySelectorAll('*').forEach((el) => {
+        expect(el.getBoundingClientRect().right, 'trace content right edge').to.be.at.most(viewport + 1)
+      })
+    })
+  })
+
   it('announces the verdict to assistive technology', () => {
     cy.analyse('BDO ALERT: Your account is on hold.')
     cy.wait('@analyze')

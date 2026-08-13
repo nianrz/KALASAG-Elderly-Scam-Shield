@@ -34,16 +34,30 @@ describe('Analyse — verdict variants', () => {
         cy.get('[data-testid="next-steps"] li').should('have.length.at.least', 1)
       })
 
-      it('never displays the model confidence', () => {
+      it('never displays the model confidence outside the trace panel', () => {
         // Self-reported confidence is not calibrated for users to reason
-        // about. The static "100%" in the uncertainty copy is DESIGN.md's own
-        // wording, not a confidence readout, so the assertion targets the
-        // confidence value itself in both its forms.
+        // about, so the primary result area never shows it. The trace panel
+        // is the deliberate exception (docs/DESIGN.md § PipelineTrace), so
+        // the assertion targets the primary surfaces rather than the whole
+        // result. The static "100%" in the uncertainty copy is DESIGN.md's
+        // own wording, not a confidence readout.
         cy.fixture(fixture).then((res) => {
-          cy.get('[data-testid="result"]')
-            .should('not.contain.text', `${Math.round(res.confidence * 100)}%`)
-            .and('not.contain.text', String(res.confidence))
+          const shown = [`${Math.round(res.confidence * 100)}%`, String(res.confidence)]
+          shown.forEach((value) => {
+            cy.get('[data-testid="verdict"]').should('not.contain.text', value)
+            cy.get('[data-testid="next-steps"]').should('not.contain.text', value)
+            cy.get('[data-testid="uncertainty"]').should('not.contain.text', value)
+          })
         })
+      })
+
+      it('keeps the confidence behind a deliberate click', () => {
+        // Closed-<details> content is hidden via content-visibility, which
+        // Cypress's visibility algorithm does not understand — so the closed
+        // state is asserted on the open attribute, not on the element.
+        cy.get('[data-testid="pipeline-trace"]').should('not.have.attr', 'open')
+        cy.get('[data-testid="pipeline-trace"] summary').click()
+        cy.get('[data-testid="trace-confidence"]').should('be.visible')
       })
     })
   })

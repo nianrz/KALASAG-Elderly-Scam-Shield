@@ -19,6 +19,11 @@
     }
   ],
   "similar_scams": [],
+  "concepts_en": [],
+  "retrieved": [
+    { "chunk_id": "msg00051", "parent_type": "message_example", "scam_type": "romance-investment" }
+  ],
+  "low_confidence_reason": "The message is a plain greeting with no lure, no link, and no request — nothing in the knowledge base resembles it.",
   "kb_freshness": "2026-08-06",
   "model_id": "bedrock_converse:global.anthropic.claude-sonnet-5"
 }

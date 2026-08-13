@@ -18,6 +18,12 @@
     }
   ],
   "similar_scams": [],
+  "concepts_en": ["money received notification", "no link present", "no information requested"],
+  "retrieved": [
+    { "chunk_id": "gcash-rebuttal-receipt", "parent_type": "brand_rebuttal", "scam_type": null },
+    { "chunk_id": "msg00133", "parent_type": "message_example", "scam_type": "gcash-impersonation" }
+  ],
+  "low_confidence_reason": null,
   "kb_freshness": "2026-08-06",
   "model_id": "bedrock_converse:global.anthropic.claude-sonnet-5"
 }

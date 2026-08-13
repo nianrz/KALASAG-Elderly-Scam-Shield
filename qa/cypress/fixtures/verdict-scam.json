@@ -43,6 +43,14 @@
       "scam_type": "bank-impersonation"
     }
   ],
+  "concepts_en": ["impersonates BDO", "account hold threat", "urgency deadline", "suspicious link"],
+  "retrieved": [
+    { "chunk_id": "msg00412", "parent_type": "message_example", "scam_type": "bank-impersonation" },
+    { "chunk_id": "lure-account-suspended", "parent_type": "lure_pattern", "scam_type": "bank-impersonation" },
+    { "chunk_id": "lure-urgency-deadline", "parent_type": "lure_pattern", "scam_type": null },
+    { "chunk_id": "bdo-fraud-advisory-1", "parent_type": "advisory", "scam_type": null }
+  ],
+  "low_confidence_reason": null,
   "kb_freshness": "2026-08-06",
   "model_id": "bedrock_converse:global.anthropic.claude-sonnet-5"
 }

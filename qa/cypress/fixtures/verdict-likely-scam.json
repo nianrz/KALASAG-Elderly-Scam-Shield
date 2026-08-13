@@ -26,6 +26,12 @@
     }
   ],
   "similar_scams": [],
+  "concepts_en": ["prize claim offer", "unsolicited congratulations", "contact to receive winnings"],
+  "retrieved": [
+    { "chunk_id": "lure-casino-promo", "parent_type": "lure_pattern", "scam_type": "online-casino" },
+    { "chunk_id": "msg00287", "parent_type": "message_example", "scam_type": "prize-raffle" }
+  ],
+  "low_confidence_reason": "The message names no brand and no link, so it only partly matches the known prize-scam pattern.",
   "kb_freshness": "2026-08-06",
   "model_id": "bedrock_converse:global.anthropic.claude-sonnet-5"
 }
