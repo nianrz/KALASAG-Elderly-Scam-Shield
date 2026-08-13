@@ -25,6 +25,7 @@ from app.schemas import (
     AnalyzeRequest,
     AnalyzeResponse,
     MetaResponse,
+    RetrievedChunk,
     SimilarScam,
 )
 
@@ -114,6 +115,14 @@ def analyze(request: AnalyzeRequest) -> AnalyzeResponse:
         for chunk in state.get("retrieved", [])
         if chunk.parent_type == "message_example"
     ][:3]
+    retrieved = [
+        RetrievedChunk(
+            chunk_id=chunk.chunk_id,
+            parent_type=chunk.parent_type,
+            scam_type=chunk.scam_type,
+        )
+        for chunk in state.get("retrieved", [])
+    ]
 
     return AnalyzeResponse(
         verdict=state["verdict"],
@@ -127,6 +136,9 @@ def analyze(request: AnalyzeRequest) -> AnalyzeResponse:
         next_steps=advice.next_steps,
         contacts=advice.contacts,
         similar_scams=similar,
+        concepts_en=state.get("concepts_en", []),
+        retrieved=retrieved,
+        low_confidence_reason=state.get("low_confidence_reason"),
         kb_freshness=freshness,
         model_id=settings.model_id,
     )

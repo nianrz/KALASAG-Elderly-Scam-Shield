@@ -31,6 +31,12 @@ class SimilarScam(BaseModel):
     scam_type: str | None = None
 
 
+class RetrievedChunk(BaseModel):
+    chunk_id: str
+    parent_type: str          # message_example | advisory | lure_pattern | brand_rebuttal
+    scam_type: str | None = None
+
+
 class AnalyzeResponse(BaseModel):
     verdict: Verdict
     confidence: float = Field(ge=0.0, le=1.0)
@@ -43,6 +49,9 @@ class AnalyzeResponse(BaseModel):
     next_steps: list[str]
     contacts: list[Contact]
     similar_scams: list[SimilarScam]
+    concepts_en: list[str]
+    retrieved: list[RetrievedChunk]
+    low_confidence_reason: str | None = None
     kb_freshness: str
     model_id: str
 

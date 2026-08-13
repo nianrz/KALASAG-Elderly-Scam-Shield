@@ -12,7 +12,8 @@ from app.retrieval.store import ChunkStore
 RESPONSE_KEYS = {
     "verdict", "confidence", "reflected", "message_type", "redactions",
     "redacted_text", "red_flags", "explanation", "next_steps", "contacts",
-    "similar_scams", "kb_freshness", "model_id",
+    "similar_scams", "concepts_en", "retrieved", "low_confidence_reason",
+    "kb_freshness", "model_id",
 }
 
 CONCEPTS = json.dumps(["claims account suspended", "urgency deadline"])
@@ -110,6 +111,30 @@ class TestAnalyze:
         assert len(body["similar_scams"]) <= 3
         for scam in body["similar_scams"]:
             assert set(scam) == {"text", "scam_type"}
+
+    def test_trace_fields_present_and_shaped(self, client):
+        body = client.post(
+            "/api/analyze",
+            json={"text": "BDO ALERT: Your account is on hold", "language": "en"},
+        ).json()
+        assert isinstance(body["concepts_en"], list)
+        assert all(isinstance(c, str) for c in body["concepts_en"])
+        assert body["retrieved"]
+        for chunk in body["retrieved"]:
+            assert set(chunk) == {"chunk_id", "parent_type", "scam_type"}
+            assert chunk["chunk_id"]
+        assert "low_confidence_reason" in body
+
+    def test_trace_never_echoes_redacted_values(self, client):
+        # Invariant 1: the trace fields read from GraphState, which only ever
+        # holds redacted text — the raw OTP must not appear anywhere in the
+        # serialised response.
+        response = client.post(
+            "/api/analyze",
+            json={"text": "GCash alert: send OTP 483920 to verify", "language": "en"},
+        )
+        assert response.status_code == 200
+        assert "483920" not in response.text
 
     def test_empty_text_rejected_without_echo(self, client):
         response = client.post("/api/analyze", json={"text": "", "language": "en"})
