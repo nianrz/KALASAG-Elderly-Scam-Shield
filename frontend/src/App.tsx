@@ -16,6 +16,14 @@ type Phase = 'idle' | 'analysing' | 'result' | 'error'
 
 const LANG_KEY = 'kalasag-lang'
 
+// Prefilled so the demo is one click from a verdict. Deliberately carries an
+// OTP and a mobile number as well as the lure, so the redaction line in the
+// result has something to show. Not UI copy — it is sample user input, so it
+// stays in one language regardless of the toggle.
+const DEMO_MESSAGE = `GCASH ALERT: Na-lock po ang account ninyo dahil sa unrecognized login attempt. I-verify agad dito para maibalik: gcash-verify-ph.online
+
+Pakisend din po ang OTP code 483920 at ang registered number 09171234567 para ma-confirm namin ngayon. Salamat po!`
+
 function storedLanguage(): Language {
   return localStorage.getItem(LANG_KEY) === 'en' ? 'en' : 'tl'
 }
@@ -30,7 +38,7 @@ function ShieldMark() {
 export default function App() {
   const [language, setLanguage] = useState<Language>(storedLanguage)
   const [phase, setPhase] = useState<Phase>('idle')
-  const [text, setText] = useState('')
+  const [text, setText] = useState(DEMO_MESSAGE)
   const [result, setResult] = useState<AnalyzeResponse | null>(null)
   const [meta, setMeta] = useState<MetaResponse | null>(null)
   const [metaFailed, setMetaFailed] = useState(false)

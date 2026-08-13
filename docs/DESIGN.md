@@ -87,6 +87,8 @@ The privacy line sits under the button because that is where hesitation happens,
 
 The submit button is full-width and the only primary action on screen.
 
+**The textarea loads prefilled with a sample scam message** — `DEMO_MESSAGE` in `App.tsx`, a Taglish GCash account-lock lure carrying an OTP and a mobile number. It is there so the demo reaches a verdict in one click instead of a paste, and the OTP and number are in it deliberately: they give the redaction line on the result screen something to list. It is sample *input*, not UI copy, so it does not move with the language toggle and has no `i18n` key. The cost is that a real user must clear the box before typing their own message; for a demo build that trade is worth it, and it is the first thing to revisit if this ships to actual users. Reset (*Check another message*) clears the box rather than restoring the sample — the prefill is a first-load affordance, not a sticky default.
+
 ### 2. Analysing
 
 Replace the button with a static progress indicator and a plain-language step label — *Binabasa ang mensahe → Hinahanap ang mga katulad na scam → Sinusuri ang mga red flag → Inihahanda ang payo*.

@@ -7,6 +7,7 @@ describe('Error states', () => {
     // A disabled button with no explanation is worse than an error.
     cy.stubAnalyze('verdict-scam.json')
     cy.visit('/')
+    cy.get('[data-testid="message-input"]').clear()
     cy.get('[data-testid="submit"]').should('not.be.disabled').click()
     cy.get('[data-testid="input-error"]').should('be.visible')
   })
